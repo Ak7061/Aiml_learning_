@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>K-Means — Step by Step</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F1F3EF;
+    --panel: #FFFFFF;
+    --border: #D8DCD3;
+    --ink: #1B1F1D;
+    --ink-soft: #5B615C;
+    --accent: #1F5C4D;
+    --accent-ink: #FFFFFF;
+    --accent-soft: #E4EEEA;
+    --c1: #2E6E8E;
+    --c1-soft: #DCE9F0;
+    --c2: #C98A2A;
+    --c2-soft: #F5E9D3;
+    --c3: #3E7C59;
+    --c3-soft: #DFEBE2;
+    --line: #B9C0B9;
+    --shadow: rgba(27, 31, 29, 0.08);
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  :root:not([data-theme="light"]) {
+    @media (prefers-color-scheme: dark) {
+      --bg: #14211C;
+      --panel: #182922;
+      --border: #274036;
+      --ink: #EDF3EF;
+      --ink-soft: #9FB0A7;
+      --accent: #59C7A4;
+      --accent-ink: #0E1A16;
+      --accent-soft: #1F3A31;
+      --c1: #6FB3DA;
+      --c1-soft: #1E3040;
+      --c2: #E3B564;
+      --c2-soft: #3A2F1A;
+      --c3: #7FC79A;
+      --c3-soft: #1F332A;
+      --line: #33473D;
+      --shadow: rgba(0, 0, 0, 0.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #14211C;
+    --panel: #182922;
+    --border: #274036;
+    --ink: #EDF3EF;
+    --ink-soft: #9FB0A7;
+    --accent: #59C7A4;
+    --accent-ink: #0E1A16;
+    --accent-soft: #1F3A31;
+    --c1: #6FB3DA;
+    --c1-soft: #1E3040;
+    --c2: #E3B564;
+    --c2-soft: #3A2F1A;
+    --c3: #7FC79A;
+    --c3-soft: #1F332A;
+    --line: #33473D;
+    --shadow: rgba(0, 0, 0, 0.35);
+  }
+  html, body {
+    height: 100%;
+    margin: 0;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "IBM Plex Sans", -apple-system, sans-serif;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+  }
+  .topbar {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 18px;
+    padding-top: calc(12px + env(safe-area-inset-top, 0px));
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+  .title-block {
+    display: flex;
+    flex-direction: column;
+    margin-right: 8px;
+  }
+  .title-block h1 {
+    font-size: 16px;
+    margin: 0;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  .title-block span {
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+    flex-wrap: wrap;
+  }
+  button.ctrl {
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    color: var(--ink);
+    padding: 8px 14px;
+    border-radius: 7px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.15s ease, transform 0.1s ease;
+  }
+  button.ctrl:hover { background: var(--accent-soft); }
+  button.ctrl:active { transform: scale(0.97); }
+  button.ctrl:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  button.ctrl:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  button.play {
+    background: var(--accent);
+    color: var(--accent-ink);
+    border-color: var(--accent);
+    min-width: 92px;
+    justify-content: center;
+  }
+  button.play:hover { filter: brightness(1.05); }
+  .speed-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--ink-soft);
+    padding-left: 8px;
+    border-left: 1px solid var(--border);
+  }
+  select#speed, input#kInput {
+    font-family: inherit;
+    font-size: 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 5px 6px;
+    background: var(--panel);
+    color: var(--ink);
+  }
+  .progress-track {
+    flex: 0 0 auto;
+    padding: 0 18px 10px 18px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+  }
+  .progress-bar {
+    height: 4px;
+    background: var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    width: 0%;
+    transition: width 0.35s ease;
+  }
+  .layout {
+    flex: 1 1 auto;
+    display: flex;
+    min-height: 0;
+  }
+  .math-panel {
+    flex: 0 0 25%;
+    max-width: 25%;
+    min-width: 260px;
+    background: var(--panel);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    padding: 18px 16px 28px 16px;
+  }
+  .graph-panel {
+    flex: 1 1 75%;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+    gap: 14px;
+    overflow: auto;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    padding: 4px 9px;
+    border-radius: 5px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+  .badge.assign { background: var(--c1-soft); color: var(--c1); }
+  .badge.update { background: var(--c2-soft); color: var(--c2); }
+  .badge.done { background: var(--c3-soft); color: var(--c3); }
+  h2.step-title {
+    font-size: 15px;
+    margin: 0 0 6px 0;
+    font-weight: 700;
+  }
+  p.step-desc {
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    line-height: 1.5;
+    margin: 0 0 16px 0;
+  }
+  .formula-box {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 16px;
+  }
+  .formula-box .label {
+    font-size: 10px;
+    text-transform: none;
+    color: var(--ink-soft);
+    margin-bottom: 4px;
+    font-weight: 600;
+  }
+  .formula {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink);
+  }
+  .stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 18px;
+  }
+  .stat {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 10px;
+    background: var(--bg);
+  }
+  .stat .k { font-size: 10px; color: var(--ink-soft); font-weight: 600; }
+  .stat .v {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 14px;
+    font-weight: 600;
+    margin-top: 2px;
+  }
+  .calc-table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 16px;
+  }
+  table.calc {
+    border-collapse: collapse;
+    width: 100%;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11.5px;
+    min-width: 320px;
+  }
+  table.calc th, table.calc td {
+    padding: 6px 8px;
+    text-align: right;
+    white-space: nowrap;
+  }
+  table.calc th:first-child, table.calc td:first-child {
+    text-align: left;
+  }
+  table.calc thead th {
+    background: var(--bg);
+    color: var(--ink-soft);
+    font-weight: 600;
+    border-bottom: 1px solid var(--border);
+    font-family: "IBM Plex Sans", sans-serif;
+    font-size: 10.5px;
+  }
+  table.calc tbody tr:not(:last-child) td {
+    border-bottom: 1px dashed var(--border);
+  }
+  table.calc td.win {
+    font-weight: 700;
+    border-radius: 4px;
+  }
+  .mean-block {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 10px;
+    background: var(--bg);
+  }
+  .mean-block .clabel {
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+  .dot {
+    width: 9px; height: 9px; border-radius: 50%; flex: none;
+    display: inline-block;
+  }
+  .mean-block .expr {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    word-break: break-word;
+  }
+  .note {
+    font-size: 11.5px;
+    color: var(--ink-soft);
+    line-height: 1.5;
+    border-top: 1px solid var(--border);
+    padding-top: 12px;
+    margin-top: 4px;
+  }
+  .chart-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    box-shadow: 0 1px 2px var(--shadow);
+  }
+  .chart-card.main { flex: 1 1 auto; min-height: 320px; display: flex; flex-direction: column; }
+  .chart-card.mini { flex: 0 0 auto; }
+  .chart-card h3 {
+    margin: 0 0 8px 0;
+    font-size: 13px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .chart-card h3 .sub {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--ink-soft);
+  }
+  svg { display: block; width: 100%; height: auto; }
+  .legend {
+    display: flex;
+    gap: 14px;
+    font-size: 11.5px;
+    color: var(--ink-soft);
+    margin-top: 8px;
+    flex-wrap: wrap;
+  }
+  .legend .item { display: flex; align-items: center; gap: 5px; }
+  .pt { transition: fill 0.45s ease, stroke 0.45s ease; }
+  .link-line { transition: opacity 0.3s ease; }
+  .centroid { transition: filter 0.2s ease, opacity 0.35s ease; }
+  kbd {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 10px;
+    border: 1px solid var(--border);
+    border-bottom-width: 2px;
+    border-radius: 4px;
+    padding: 1px 5px;
+    background: var(--bg);
+  }
+
+  @media (max-width: 760px) {
+    .layout { flex-direction: column; overflow-y: auto; }
+    .math-panel {
+      flex: 0 0 auto;
+      max-width: 100%;
+      min-width: 0;
+      border-right: none;
+      border-bottom: 1px solid var(--border);
+      max-height: 46vh;
+    }
+    .graph-panel { overflow: visible; }
+    .title-block span { display: none; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="title-block">
+      <h1>K-Means — Step by Step</h1>
+      <span>9 points · K = 3 · same dataset as the notes</span>
+    </div>
+    <div class="controls">
+      <button class="ctrl" id="btnPrev" title="Previous step">‹ Prev</button>
+      <button class="ctrl play" id="btnPlay">▶ Play</button>
+      <button class="ctrl" id="btnNext">Next ›</button>
+      <button class="ctrl" id="btnReset" title="Restart — also re-rolls a new K-Means++ pick">⟲ Reset</button>
+      <div class="speed-wrap">
+        K
+        <input type="number" id="kInput" min="1" max="6" value="3" style="width:44px;">
+      </div>
+      <div class="speed-wrap">
+        Init
+        <select id="initMethod" title="How the starting centroids are chosen">
+          <option value="standard" selected>Standard (fixed)</option>
+          <option value="pp">K-Means++</option>
+        </select>
+      </div>
+      <div class="speed-wrap">
+        Speed
+        <select id="speed">
+          <option value="1800">0.5×</option>
+          <option value="1100" selected>1×</option>
+          <option value="600">2×</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="progress-track">
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  </div>
+
+  <div class="layout">
+    <div class="math-panel" id="mathPanel"><!-- filled by JS --></div>
+    <div class="graph-panel">
+      <div class="chart-card main">
+        <h3>Cluster assignment <span class="sub" id="stepSub">step 0 of 0</span></h3>
+        <svg id="mainSvg" viewBox="0 0 640 460" preserveAspectRatio="xMidYMid meet"></svg>
+        <div class="legend" id="legend"></div>
+      </div>
+      <div class="chart-card mini">
+        <h3>WCSS (inertia) after each step <span class="sub">lower = tighter clusters</span></h3>
+        <svg id="wcssSvg" viewBox="0 0 640 130" preserveAspectRatio="xMidYMid meet"></svg>
+      </div>
+    </div>
+  </div>
+
+<script>
+(function () {
+  "use strict";
+
+  // ---------------------------------------------------------------
+  // 1. DATA — identical to the notes (Section 2) and the python demo
+  // ---------------------------------------------------------------
+  const POINTS = [
+    { name: "P1", x: 1.0, y: 1.0 },
+    { name: "P2", x: 1.5, y: 2.0 },
+    { name: "P3", x: 2.0, y: 1.2 },
+    { name: "P4", x: 4.0, y: 5.0 },
+    { name: "P5", x: 4.5, y: 5.5 },
+    { name: "P6", x: 5.0, y: 4.5 },
+    { name: "P7", x: 8.0, y: 1.0 },
+    { name: "P8", x: 9.0, y: 2.0 },
+    { name: "P9", x: 8.5, y: 1.5 },
+  ];
+  const INITIAL_CENTROIDS = [ [1, 1], [4, 5], [8, 1] ]; // C1, C2, C3 — same as notes Section 4
+  const CLUSTER_COLORS = ["var(--c1)", "var(--c2)", "var(--c3)"];
+  const CLUSTER_COLORS_SOLID_LIGHT = ["#2E6E8E", "#C98A2A", "#3E7C59"]; // used inside SVG fills for reliability
+
+  function dist(a, b) {
+    return Math.hypot(a[0] - b[0], a[1] - b[1]);
+  }
+  function mean(points) {
+    const n = points.length;
+    const sx = points.reduce((s, p) => s + p.x, 0);
+    const sy = points.reduce((s, p) => s + p.y, 0);
+    return [sx / n, sy / n];
+  }
+  function computeWCSS(centroids, assignments) {
+    let total = 0;
+    POINTS.forEach((p, i) => {
+      const c = centroids[assignments[i]];
+      total += (p.x - c[0]) ** 2 + (p.y - c[1]) ** 2;
+    });
+    return total;
+  }
+
+  // ---------------------------------------------------------------
+  // 2. BUILD THE FULL FRAME SEQUENCE (mirrors the from-scratch loop)
+  //    Two entry points, same assign/update loop afterwards:
+  //      "standard" — fixed centroids, exactly as in the notes
+  //      "pp"       — K-Means++ picks the centroids first (notes Section 8)
+  // ---------------------------------------------------------------
+  const K = INITIAL_CENTROIDS.length;
+
+  function padCentroids(list, k) {
+    const out = list.map(c => c.slice());
+    while (out.length < k) out.push(out.length ? out[out.length - 1].slice() : [0, 0]);
+    return out;
+  }
+
+  // K-Means++ selection, step by step (notes Section 8, steps 1-5)
+  function buildPPSelectionFrames(k) {
+    const ppFrames = [];
+    const chosenPoints = [];
+    const chosenIdx = [];
+
+    // Step 1: first centroid chosen uniformly at random
+    const idx0 = Math.floor(Math.random() * POINTS.length);
+    chosenPoints.push([POINTS[idx0].x, POINTS[idx0].y]);
+    chosenIdx.push(idx0);
+    ppFrames.push({
+      type: "pp-select", ppStep: 1, totalSteps: k,
+      chosenIndices: [], distSq: null, probs: null,
+      chosenIndex: idx0,
+      centroids: padCentroids(chosenPoints, k),
+      visibleCount: 1, assignments: null, wcss: null,
+    });
+
+    // Steps 2..k: D(x)^2 weighted sampling
+    for (let step = 2; step <= k; step++) {
+      const distSq = POINTS.map(p =>
+        Math.min(...chosenPoints.map(c => (p.x - c[0]) ** 2 + (p.y - c[1]) ** 2))
+      );
+      const sum = distSq.reduce((a, b) => a + b, 0);
+      const probs = distSq.map(d => d / sum);
+      const r = Math.random();
+      let cum = 0, pick = probs.length - 1;
+      for (let i = 0; i < probs.length; i++) {
+        cum += probs[i];
+        if (r <= cum) { pick = i; break; }
+      }
+      ppFrames.push({
+        type: "pp-select", ppStep: step, totalSteps: k,
+        chosenIndices: chosenIdx.slice(), distSq, probs,
+        chosenIndex: pick,
+        centroids: padCentroids(chosenPoints.concat([[POINTS[pick].x, POINTS[pick].y]]), k),
+        visibleCount: step, assignments: null, wcss: null,
+      });
+      chosenPoints.push([POINTS[pick].x, POINTS[pick].y]);
+      chosenIdx.push(pick);
+    }
+
+    ppFrames.push({
+      type: "ppready", iteration: 0,
+      centroids: chosenPoints.map(c => c.slice()),
+      assignments: null, wcss: null, visibleCount: k,
+    });
+
+    return { frames: ppFrames, centroids: chosenPoints };
+  }
+
+  function buildFrames(method) {
+    const built = [];
+    let startCentroids;
+
+    if (method === "pp") {
+      const pp = buildPPSelectionFrames(K);
+      pp.frames.forEach(f => built.push(f));
+      startCentroids = pp.centroids;
+    } else {
+      built.push({
+        type: "init", iteration: 0,
+        centroids: INITIAL_CENTROIDS.map(c => c.slice()),
+        assignments: null, wcss: null, visibleCount: K,
+      });
+      startCentroids = INITIAL_CENTROIDS.map(c => c.slice());
+    }
+
+    let centroids = startCentroids.map(c => c.slice());
+    let iteration = 1;
+    let prevAssignmentsKey = null;
+
+    for (let guard = 0; guard < 12; guard++) {
+      // --- ASSIGN step ---
+      const distances = POINTS.map(p => centroids.map(c => dist([p.x, p.y], c)));
+      const assignments = distances.map(d => d.indexOf(Math.min(...d)));
+      const wcssAssign = computeWCSS(centroids, assignments);
+
+      built.push({
+        type: "assign",
+        iteration,
+        centroids: centroids.map(c => c.slice()),
+        assignments: assignments.slice(),
+        distances,
+        wcss: wcssAssign,
+        visibleCount: K,
+      });
+
+      // --- UPDATE step ---
+      const newCentroids = centroids.map((c, k2) => {
+        const members = POINTS.filter((_, i) => assignments[i] === k2);
+        return members.length ? mean(members) : c.slice();
+      });
+      const clusterMembers = centroids.map((_, k2) =>
+        POINTS.map((p, i) => ({ p, i })).filter(o => assignments[o.i] === k2)
+      );
+      const wcssUpdate = computeWCSS(newCentroids, assignments);
+
+      built.push({
+        type: "update",
+        iteration,
+        oldCentroids: centroids.map(c => c.slice()),
+        centroids: newCentroids.map(c => c.slice()),
+        assignments: assignments.slice(),
+        clusterMembers,
+        wcss: wcssUpdate,
+        visibleCount: K,
+      });
+
+      const moved = centroids.some((c, k2) =>
+        Math.abs(c[0] - newCentroids[k2][0]) > 1e-9 || Math.abs(c[1] - newCentroids[k2][1]) > 1e-9
+      );
+      const assignKey = assignments.join(",");
+      centroids = newCentroids;
+
+      if (!moved && assignKey === prevAssignmentsKey) {
+        built.push({
+          type: "done",
+          iteration,
+          centroids: centroids.map(c => c.slice()),
+          assignments: assignments.slice(),
+          wcss: wcssUpdate,
+          visibleCount: K,
+        });
+        break;
+      }
+      prevAssignmentsKey = assignKey;
+      iteration++;
+    }
+
+    return built;
+  }
+
+  let frames = buildFrames("standard");
+
+  // ---------------------------------------------------------------
+  // 3. SVG SETUP — data space -> screen space
+  // ---------------------------------------------------------------
+  const svgNS = "http://www.w3.org/2000/svg";
+  const mainSvg = document.getElementById("mainSvg");
+  const W = 640, H = 460, PAD = 46;
+  const xMin = 0, xMax = 10, yMin = 0, yMax = 6.5;
+  function sx(x) { return PAD + (x - xMin) / (xMax - xMin) * (W - 2 * PAD); }
+  function sy(y) { return H - PAD - (y - yMin) / (yMax - yMin) * (H - 2 * PAD); }
+
+  function el(tag, attrs) {
+    const e = document.createElementNS(svgNS, tag);
+    for (const k in attrs) e.setAttribute(k, attrs[k]);
+    return e;
+  }
+
+  // static axes / gridlines
+  const gridLayer = el("g", {});
+  for (let gx = 0; gx <= 10; gx += 2) {
+    gridLayer.appendChild(el("line", { x1: sx(gx), y1: sy(0), x2: sx(gx), y2: sy(6.5), stroke: "var(--line)", "stroke-width": 1, opacity: 0.5 }));
+    gridLayer.appendChild(el("text", { x: sx(gx), y: sy(0) + 18, "text-anchor": "middle", "font-size": 10, fill: "var(--ink-soft)", "font-family": "IBM Plex Mono, monospace" }));
+    gridLayer.lastChild.textContent = gx;
+  }
+  for (let gy = 0; gy <= 6; gy += 1) {
+    gridLayer.appendChild(el("line", { x1: sx(0), y1: sy(gy), x2: sx(10), y2: sy(gy), stroke: "var(--line)", "stroke-width": 1, opacity: 0.5 }));
+    gridLayer.appendChild(el("text", { x: sx(0) - 10, y: sy(gy) + 4, "text-anchor": "end", "font-size": 10, fill: "var(--ink-soft)", "font-family": "IBM Plex Mono, monospace" }));
+    gridLayer.lastChild.textContent = gy;
+  }
+  gridLayer.appendChild(el("text", { x: W / 2, y: H - 6, "text-anchor": "middle", "font-size": 11, fill: "var(--ink-soft)" }));
+  gridLayer.lastChild.textContent = "x₁";
+  gridLayer.appendChild(el("text", { x: 14, y: H / 2, "text-anchor": "middle", "font-size": 11, fill: "var(--ink-soft)", transform: `rotate(-90 14 ${H / 2})` }));
+  gridLayer.lastChild.textContent = "x₂";
+  mainSvg.appendChild(gridLayer);
+
+  const linkLayer = el("g", { id: "linkLayer" });
+  const ptLayer = el("g", { id: "ptLayer" });
+  const centroidLayer = el("g", { id: "centroidLayer" });
+  mainSvg.appendChild(linkLayer);
+  mainSvg.appendChild(ptLayer);
+  mainSvg.appendChild(centroidLayer);
+
+  // points (static position, color animates)
+  const pointEls = POINTS.map((p, i) => {
+    const c = el("circle", {
+      cx: sx(p.x), cy: sy(p.y), r: 8,
+      class: "pt", fill: "#9AA39C", stroke: "var(--panel)", "stroke-width": 2,
+    });
+    ptLayer.appendChild(c);
+    const label = el("text", {
+      x: sx(p.x) + 11, y: sy(p.y) - 9, "font-size": 11,
+      fill: "var(--ink)", "font-family": "IBM Plex Mono, monospace",
+    });
+    label.textContent = p.name;
+    ptLayer.appendChild(label);
+    return c;
+  });
+
+  // link lines from point to its centroid
+  const linkEls = POINTS.map(() => {
+    const l = el("line", { class: "link-line", stroke: "#9AA39C", "stroke-width": 1, "stroke-dasharray": "3,3", opacity: 0 });
+    linkLayer.appendChild(l);
+    return l;
+  });
+
+  // centroids (position animates)
+  const centroidEls = [0, 1, 2].map(k => {
+    const g = el("g", { class: "centroid" });
+    const star = el("path", { d: starPath(0, 0, 12), fill: CLUSTER_COLORS_SOLID_LIGHT[k], stroke: "var(--panel)", "stroke-width": 1.5 });
+    g.appendChild(star);
+    centroidLayer.appendChild(g);
+    return { g, star };
+  });
+
+  function starPath(cx, cy, r) {
+    const spikes = 5, outerR = r, innerR = r * 0.45;
+    let path = "";
+    for (let i = 0; i < spikes * 2; i++) {
+      const rad = i % 2 === 0 ? outerR : innerR;
+      const ang = (Math.PI / spikes) * i - Math.PI / 2;
+      const px = cx + Math.cos(ang) * rad;
+      const py = cy + Math.sin(ang) * rad;
+      path += (i === 0 ? "M" : "L") + px.toFixed(2) + "," + py.toFixed(2) + " ";
+    }
+    return path + "Z";
+  }
+
+  // legend
+  const legendEl = document.getElementById("legend");
+  legendEl.innerHTML = [0, 1, 2].map(k =>
+    `<span class="item"><span class="dot" style="background:${CLUSTER_COLORS_SOLID_LIGHT[k]}"></span>Cluster ${k + 1}</span>`
+  ).join("") + `<span class="item"><span class="dot" style="background:#9AA39C"></span>Unassigned</span>`;
+
+  // ---------------------------------------------------------------
+  // 4. MINI WCSS CHART
+  // ---------------------------------------------------------------
+  const wcssSvg = document.getElementById("wcssSvg");
+  const WW = 640, WH = 130, WPAD = 30;
+  const wcssValues = frames.filter(f => f.wcss !== null).map(f => f.wcss);
+  const wMax = Math.max(...wcssValues) * 1.1;
+  function wx(i, total) { return WPAD + (i / Math.max(1, total - 1)) * (WW - 2 * WPAD); }
+  function wy(v) { return WH - 22 - (v / wMax) * (WH - 40); }
+
+  function renderWcssChart(uptoFrameIdx) {
+    wcssSvg.innerHTML = "";
+    // axis
+    wcssSvg.appendChild(el("line", { x1: WPAD, y1: WH - 22, x2: WW - 12, y2: WH - 22, stroke: "var(--line)" }));
+    const seq = [];
+    frames.forEach((f, idx) => { if (f.wcss !== null && idx <= uptoFrameIdx) seq.push({ idx, w: f.wcss, type: f.type }); });
+    const total = frames.filter(f => f.wcss !== null).length;
+
+    if (seq.length > 1) {
+      let d = "";
+      seq.forEach((s, i) => {
+        const px = wx(wcssValues.indexOf(s.w) >= 0 ? seqIndex(s) : i, total);
+        const py = wy(s.w);
+        d += (i === 0 ? "M" : "L") + px.toFixed(1) + "," + py.toFixed(1) + " ";
+      });
+      wcssSvg.appendChild(el("path", { d, fill: "none", stroke: "var(--accent)", "stroke-width": 2 }));
+    }
+    seq.forEach((s, i) => {
+      const px = wx(seqIndex(s), total);
+      const py = wy(s.w);
+      const isLast = i === seq.length - 1;
+      wcssSvg.appendChild(el("circle", {
+        cx: px, cy: py, r: isLast ? 5 : 3.5,
+        fill: isLast ? "var(--accent)" : "var(--panel)",
+        stroke: "var(--accent)", "stroke-width": 1.6,
+      }));
+      if (isLast) {
+        const t = el("text", { x: px, y: py - 10, "text-anchor": "middle", "font-size": 11, "font-family": "IBM Plex Mono, monospace", fill: "var(--ink)" });
+        t.textContent = s.w.toFixed(2);
+        wcssSvg.appendChild(t);
+      }
+    });
+
+    function seqIndex(s) {
+      let count = 0;
+      for (let i = 0; i <= s.idx; i++) if (frames[i].wcss !== null) count++;
+      return count - 1;
+    }
+
+    wcssSvg.appendChild(el("text", { x: WPAD, y: 14, "font-size": 10, fill: "var(--ink-soft)" })).textContent = "";
+  }
+
+  // ---------------------------------------------------------------
+  // 5. MATH PANEL RENDERING
+  // ---------------------------------------------------------------
+  const mathPanel = document.getElementById("mathPanel");
+
+  function fmt(n) { return n.toFixed(2); }
+
+  function renderMathPanel(frame) {
+    let html = "";
+    if (frame.type === "init") {
+      html += `<span class="badge">setup</span>`;
+      html += `<h2 class="step-title">Initial centroids</h2>`;
+      html += `<p class="step-desc">K = 3 was chosen ahead of time. These starting positions match the notes' worked example (Section 4). Press <kbd>Next</kbd> or <kbd>Play</kbd> to begin the assign → update loop.</p>`;
+      html += `<div class="formula-box"><div class="label">Starting centroids</div><div class="formula">` +
+        frame.centroids.map((c, k) => `C${k + 1} = (${fmt(c[0])}, ${fmt(c[1])})`).join("<br>") + `</div></div>`;
+      html += `<div class="note">Every point still shows in neutral grey — nothing has been assigned to a cluster yet.</div>`;
+    } else if (frame.type === "pp-select") {
+      html += `<span class="badge" style="background:var(--c2-soft);color:var(--c2);">k-means++ init</span>`;
+      html += `<h2 class="step-title">Choosing centroid ${frame.ppStep} of ${frame.totalSteps}</h2>`;
+      if (frame.ppStep === 1) {
+        html += `<p class="step-desc">The first centroid is picked <b>uniformly at random</b> from the data points — no distances are involved yet.</p>`;
+        html += `<div class="formula-box"><div class="label">Picked</div><div class="formula">C1 = ${POINTS[frame.chosenIndex].name} = (${fmt(POINTS[frame.chosenIndex].x)}, ${fmt(POINTS[frame.chosenIndex].y)})</div></div>`;
+        html += `<div class="note">Shown as a red ring on the plot — it becomes the first star (centroid) once you move on.</div>`;
+      } else {
+        html += `<p class="step-desc">Every point gets a probability proportional to its squared distance from the <b>nearest already-chosen</b> centroid — points far from existing centroids are more likely to be picked next.</p>`;
+        html += `<div class="formula-box"><div class="label">Sampling probability</div><div class="formula">P(x) ∝ D(x)²<br>D(x) = distance to nearest chosen centroid</div></div>`;
+        html += `<div class="calc-table-wrap"><table class="calc"><thead><tr><th>Pt</th><th>D(x)²</th><th>P(x)</th></tr></thead><tbody>`;
+        POINTS.forEach((p, i) => {
+          const already = frame.chosenIndices.includes(i);
+          const isPick = i === frame.chosenIndex;
+          html += `<tr><td>${p.name}${already ? " •" : ""}</td><td>${fmt(frame.distSq[i])}</td>` +
+            `<td${isPick ? ' class="win" style="color:#C9463C"' : ""}>${(frame.probs[i] * 100).toFixed(1)}%</td></tr>`;
+        });
+        html += `</tbody></table></div>`;
+        html += `<div class="note">Picked: <b style="color:#C9463C">${POINTS[frame.chosenIndex].name}</b>. Points already used as centroids (•) sit at D(x)=0, so they can't be re-picked.</div>`;
+      }
+    } else if (frame.type === "ppready") {
+      html += `<span class="badge" style="background:var(--c2-soft);color:var(--c2);">k-means++ init</span>`;
+      html += `<h2 class="step-title">Initialization complete</h2>`;
+      html += `<p class="step-desc">K-Means++ only changes <b>how the starting centroids are picked</b> — from here it's the exact same assign → update loop as standard K-Means.</p>`;
+      html += `<div class="formula-box"><div class="label">Chosen centroids</div><div class="formula">` +
+        frame.centroids.map((c, k) => `C${k + 1} = (${fmt(c[0])}, ${fmt(c[1])})`).join("<br>") + `</div></div>`;
+      html += `<div class="note">Press <kbd>Next</kbd> or <kbd>Play</kbd> to continue into the ordinary K-Means loop. Hit <kbd>Reset</kbd> any time to re-roll a fresh K-Means++ run — the picks are randomized, so you may land on different starting centroids.</div>`;
+    } else if (frame.type === "assign") {
+      html += `<span class="badge assign">assignment step</span>`;
+      html += `<h2 class="step-title">Iteration ${frame.iteration} — assign points</h2>`;
+      html += `<p class="step-desc">Every point is compared against all K centroids and joins the <b>nearest</b> one.</p>`;
+      html += `<div class="formula-box"><div class="label">Euclidean distance</div><div class="formula">d(x, μ) = √[(x₁−μ₁)² + (x₂−μ₂)²]</div></div>`;
+      html += `<div class="calc-table-wrap"><table class="calc"><thead><tr><th>Pt</th>` +
+        frame.centroids.map((_, k) => `<th>→C${k + 1}</th>`).join("") + `<th>Wins</th></tr></thead><tbody>`;
+      POINTS.forEach((p, i) => {
+        const d = frame.distances[i];
+        const winner = frame.assignments[i];
+        html += `<tr><td>${p.name}</td>` +
+          d.map((v, k) => `<td${k === winner ? ` class="win" style="color:${CLUSTER_COLORS_SOLID_LIGHT[k]}"` : ""}>${fmt(v)}</td>`).join("") +
+          `<td style="color:${CLUSTER_COLORS_SOLID_LIGHT[winner]};font-weight:700;">C${winner + 1}</td></tr>`;
+      });
+      html += `</tbody></table></div>`;
+      html += `<div class="note">WCSS after this assignment: <b>${fmt(frame.wcss)}</b> — the total squared distance from every point to the centroid it just joined.</div>`;
+    } else if (frame.type === "update") {
+      html += `<span class="badge update">update step</span>`;
+      html += `<h2 class="step-title">Iteration ${frame.iteration} — move centroids</h2>`;
+      html += `<p class="step-desc">Each centroid jumps to the <b>mean</b> position of the points currently assigned to it.</p>`;
+      html += `<div class="formula-box"><div class="label">Centroid update</div><div class="formula">μₖ = (1/nₖ) Σ xᵢ</div></div>`;
+      frame.clusterMembers.forEach((members, k) => {
+        const names = members.map(m => m.p.name).join(" + ");
+        const sx_ = members.reduce((s, m) => s + m.p.x, 0);
+        const sy_ = members.reduce((s, m) => s + m.p.y, 0);
+        const n = members.length || 1;
+        html += `<div class="mean-block">
+          <div class="clabel"><span class="dot" style="background:${CLUSTER_COLORS_SOLID_LIGHT[k]}"></span>Cluster ${k + 1} (n=${members.length})</div>
+          <div class="expr">μ${k + 1} = ((${names || "—"})/${n})<br>
+          &nbsp;&nbsp;= (${fmt(sx_)}/${n}, ${fmt(sy_)}/${n})<br>
+          &nbsp;&nbsp;= <b>(${fmt(frame.centroids[k][0])}, ${fmt(frame.centroids[k][1])})</b></div>
+        </div>`;
+      });
+      html += `<div class="note">WCSS after moving: <b>${fmt(frame.wcss)}</b> — moving to the mean is guaranteed to never increase WCSS.</div>`;
+    } else if (frame.type === "done") {
+      html += `<span class="badge done">converged</span>`;
+      html += `<h2 class="step-title">Stopped — no more movement</h2>`;
+      html += `<p class="step-desc">Assignments and centroids are unchanged from the previous iteration, so the algorithm stops here.</p>`;
+      html += `<div class="formula-box"><div class="label">Final centroids</div><div class="formula">` +
+        frame.centroids.map((c, k) => `C${k + 1} = (${fmt(c[0])}, ${fmt(c[1])})`).join("<br>") + `</div></div>`;
+      html += `<div class="stat-grid">
+        <div class="stat"><div class="k">Iterations</div><div class="v">${frame.iteration}</div></div>
+        <div class="stat"><div class="k">Final WCSS</div><div class="v">${fmt(frame.wcss)}</div></div>
+      </div>`;
+      html += `<div class="note">This is what the Elbow and Silhouette methods use across many values of K — here you're seeing WCSS settle for one fixed K = 3.</div>`;
+    }
+    mathPanel.innerHTML = html;
+  }
+
+  // ---------------------------------------------------------------
+  // 6. ANIMATION / STATE MACHINE
+  // ---------------------------------------------------------------
+  let currentIdx = 0;
+  let playing = false;
+  let timer = null;
+
+  function lerp(a, b, t) { return a + (b - a) * t; }
+
+  function animateCentroidsTo(targetCentroids, duration) {
+    const startPositions = centroidEls.map(ce => {
+      const m = /translate\(([-\d.]+),([-\d.]+)\)/.exec(ce.g.getAttribute("transform") || "");
+      return m ? [parseFloat(m[1]), parseFloat(m[2])] : [sx(targetCentroids[0][0]), sy(targetCentroids[0][1])];
+    });
+    const targetPx = targetCentroids.map(c => [sx(c[0]), sy(c[1])]);
+    const start = performance.now();
+    function step(now) {
+      const t = Math.min(1, (now - start) / duration);
+      const ease = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t; // easeInOutQuad
+      centroidEls.forEach((ce, k) => {
+        const from = startPositions[k] && !isNaN(startPositions[k][0]) ? startPositions[k] : targetPx[k];
+        const x = lerp(from[0], targetPx[k][0], ease);
+        const y = lerp(from[1], targetPx[k][1], ease);
+        ce.g.setAttribute("transform", `translate(${x},${y})`);
+      });
+      updateLinks(targetCentroids, t);
+      if (t < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  function updateLinks(centroidsNow, alpha) {
+    const frame = frames[currentIdx];
+    if (!frame.assignments) {
+      linkEls.forEach(l => l.setAttribute("opacity", 0));
+      return;
+    }
+    POINTS.forEach((p, i) => {
+      const k = frame.assignments[i];
+      const c = centroidsNow[k];
+      linkEls[i].setAttribute("x1", sx(p.x));
+      linkEls[i].setAttribute("y1", sy(p.y));
+      linkEls[i].setAttribute("x2", sx(c[0]));
+      linkEls[i].setAttribute("y2", sy(c[1]));
+      linkEls[i].setAttribute("stroke", CLUSTER_COLORS_SOLID_LIGHT[k]);
+      linkEls[i].setAttribute("opacity", 0.45);
+    });
+  }
+
+  function renderFrame(idx, opts) {
+    opts = opts || {};
+    const frame = frames[idx];
+    currentIdx = idx;
+
+    // point colors
+    if (frame.type === "pp-select") {
+      POINTS.forEach((p, i) => {
+        if (i === frame.chosenIndex) {
+          pointEls[i].setAttribute("fill", "#C9463C");
+          pointEls[i].setAttribute("r", 10);
+        } else {
+          pointEls[i].setAttribute("fill", "#9AA39C");
+          pointEls[i].setAttribute("r", frame.probs ? (6 + frame.probs[i] * 16) : 7);
+        }
+      });
+    } else {
+      POINTS.forEach((p, i) => {
+        const k = frame.assignments ? frame.assignments[i] : null;
+        pointEls[i].setAttribute("fill", k === null ? "#9AA39C" : CLUSTER_COLORS_SOLID_LIGHT[k]);
+        pointEls[i].setAttribute("r", k === null ? 7 : 8.5);
+      });
+    }
+
+    // centroid visibility (K-Means++ reveals them one at a time)
+    const visibleCount = frame.visibleCount !== undefined ? frame.visibleCount : K;
+    centroidEls.forEach((ce, k) => {
+      ce.g.style.opacity = k < visibleCount ? 1 : 0;
+    });
+
+    // centroids
+    if (opts.animate) {
+      animateCentroidsTo(frame.centroids, 650);
+    } else {
+      frame.centroids.forEach((c, k) => {
+        centroidEls[k].g.setAttribute("transform", `translate(${sx(c[0])},${sy(c[1])})`);
+      });
+      updateLinks(frame.centroids, 1);
+    }
+
+    renderMathPanel(frame);
+    renderWcssChart(idx);
+
+    document.getElementById("stepSub").textContent = `step ${idx} of ${frames.length - 1}`;
+    document.getElementById("progressFill").style.width = `${(idx / (frames.length - 1)) * 100}%`;
+    document.getElementById("btnPrev").disabled = idx === 0;
+    document.getElementById("btnNext").disabled = idx === frames.length - 1;
+    if (idx === frames.length - 1) stopPlaying();
+  }
+
+  function goTo(idx, animate) {
+    idx = Math.max(0, Math.min(frames.length - 1, idx));
+    renderFrame(idx, { animate: animate });
+  }
+
+  function next() { if (currentIdx < frames.length - 1) goTo(currentIdx + 1, true); }
+  function prev() { if (currentIdx > 0) goTo(currentIdx - 1, false); }
+
+  function startPlaying() {
+    if (currentIdx === frames.length - 1) goTo(0, false);
+    playing = true;
+    document.getElementById("btnPlay").innerHTML = "⏸ Pause";
+    const speed = parseInt(document.getElementById("speed").value, 10);
+    tick(speed);
+  }
+  function tick(speed) {
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      if (!playing) return;
+      if (currentIdx >= frames.length - 1) { stopPlaying(); return; }
+      next();
+      tick(parseInt(document.getElementById("speed").value, 10));
+    }, speed);
+  }
+  function stopPlaying() {
+    playing = false;
+    clearTimeout(timer);
+    document.getElementById("btnPlay").innerHTML = "▶ Play";
+  }
+
+  const initSelect = document.getElementById("initMethod");
+
+  function rebuild() {
+    stopPlaying();
+    frames = buildFrames(initSelect.value);
+    goTo(0, false);
+  }
+
+  document.getElementById("btnNext").addEventListener("click", () => { stopPlaying(); next(); });
+  document.getElementById("btnPrev").addEventListener("click", () => { stopPlaying(); prev(); });
+  document.getElementById("btnReset").addEventListener("click", rebuild);
+  initSelect.addEventListener("change", rebuild);
+  document.getElementById("btnPlay").addEventListener("click", () => {
+    if (playing) stopPlaying(); else startPlaying();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowRight") { stopPlaying(); next(); }
+    if (e.key === "ArrowLeft") { stopPlaying(); prev(); }
+    if (e.key === " ") { e.preventDefault(); if (playing) stopPlaying(); else startPlaying(); }
+  });
+
+  // initial paint
+  goTo(0, false);
+})();
+</script>
+</body>
+</html>
