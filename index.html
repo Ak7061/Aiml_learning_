@@ -1023,6 +1023,13 @@
     return safeK;
   }
 
+  function getAnalysisMaxK() {
+    // Analysis methods evaluate a range ending at the user's selected K.
+    // K = N is not useful for model selection because every point can be its
+    // own cluster, so keep the upper bound at N - 1.
+    return Math.max(1, Math.min(getCurrentK(), POINTS.length - 1));
+  }
+
   function shuffledPoints() {
     const out = [...POINTS];
     for (let i = out.length - 1; i > 0; i--) {
@@ -1983,12 +1990,19 @@
   }
 
   function goTo(idx, animate) {
-    idx = Math.max(0, Math.min(frames.length - 1, idx));
+    if (!frames.length) return;
+    idx = Math.max(0, Math.min(frames.length - 1, Number(idx) || 0));
     renderFrame(idx, { animate: animate });
   }
 
-  function next() { if (currentIdx < frames.length - 1) goTo(currentIdx + 1, true); }
-  function prev() { if (currentIdx > 0) goTo(currentIdx - 1, false); }
+  function next() {
+    if (currentIdx < frames.length - 1) goTo(currentIdx + 1, true);
+  }
+
+  function prev() {
+    const previousIdx = Math.max(0, currentIdx - 1);
+    if (previousIdx !== currentIdx) goTo(previousIdx, false);
+  }
 
   function startPlaying() {
     if (currentIdx === frames.length - 1) goTo(0, false);
@@ -2144,7 +2158,7 @@
 
   // Build step-by-step frames for Elbow Method
   function buildElbowFrames() {
-    const maxK = Math.min(POINTS.length - 1, 6);
+    const maxK = getAnalysisMaxK();
     const built = [];
 
     // Introduction frame
@@ -2204,7 +2218,7 @@
 
   // Build step-by-step frames for Silhouette Analysis
   function buildSilhouetteFrames() {
-    const maxK = Math.min(POINTS.length - 1, 6);
+    const maxK = getAnalysisMaxK();
     const built = [];
 
     // Introduction frame
@@ -2388,7 +2402,7 @@
   }
 
   function analyzeOptimalK() {
-    const maxK = Math.min(POINTS.length - 1, 6);
+    const maxK = getAnalysisMaxK();
     const results = [];
 
     // Run K-Means for K = 1 to maxK
