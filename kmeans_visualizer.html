@@ -35,7 +35,7 @@
     padding-top: env(safe-area-inset-top, 0px);
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
-  
+
   html, body {
     height: 100%;
     margin: 0;
@@ -102,8 +102,8 @@
     gap: 6px;
     transition: all 0.15s ease;
   }
-  button.ctrl:hover { 
-    background: #F9FAFB; 
+  button.ctrl:hover {
+    background: #F9FAFB;
     border-color: var(--accent);
     transform: translateY(-1px);
   }
@@ -125,7 +125,7 @@
     box-shadow: 0 2px 4px rgba(99, 102, 241, 0.2);
     font-weight: 600;
   }
-  button.play:hover { 
+  button.play:hover {
     background: #4F46E5;
     box-shadow: 0 4px 6px rgba(99, 102, 241, 0.3);
     transform: translateY(-1px);
@@ -187,6 +187,14 @@
     overflow-y: auto;
     overflow-x: hidden;
     padding: 22px 20px 32px 20px;
+    /* Hide scrollbar while keeping scroll functionality */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+  }
+
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  .math-panel::-webkit-scrollbar {
+    display: none;
   }
 
   /* Drag handle for resizing the complete math panel */
@@ -222,6 +230,14 @@
     gap: 16px;
     overflow: auto;
     background: #F8FAFC;
+    /* Hide scrollbar while keeping scroll functionality */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+  }
+
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  .graph-panel::-webkit-scrollbar {
+    display: none;
   }
   .badge {
     display: inline-flex;
@@ -338,6 +354,13 @@
     font-weight: 700;
     border-radius: 4px;
   }
+  /* WCSS row hover effect */
+  tr.wcss-row:hover {
+    background: #F9FAFB;
+  }
+  tr.wcss-detail td {
+    transition: all 0.2s ease;
+  }
   .wcss-box {
     border: 1px solid var(--border);
     border-radius: 8px;
@@ -428,14 +451,14 @@
     padding: 20px;
     box-shadow: 0 1px 3px var(--shadow);
   }
-  .chart-card.main { 
-    flex: 1 1 auto; 
+  .chart-card.main {
+    flex: 1 1 auto;
     min-height: 550px;
-    display: flex; 
+    display: flex;
     flex-direction: column;
   }
-  .chart-card.mini { 
-    flex: 0 0 auto; 
+  .chart-card.mini {
+    flex: 0 0 auto;
     min-height: 180px;
   }
   .chart-card h3 {
@@ -452,10 +475,10 @@
     font-weight: 500;
     color: var(--ink-soft);
   }
-  svg { 
-    display: block; 
-    width: 100%; 
-    height: auto; 
+  svg {
+    display: block;
+    width: 100%;
+    height: auto;
     background: #FFFFFF;
     flex: 1;
     min-height: 0;
@@ -470,7 +493,7 @@
     flex-wrap: wrap;
   }
   .legend .item { display: flex; align-items: center; gap: 7px; }
-  .pt { 
+  .pt {
     transition: fill 0.4s ease, stroke 0.4s ease, r 0.15s ease;
     cursor: pointer;
   }
@@ -793,6 +816,14 @@
       <button class="ctrl" id="btnReset" title="Restart">⟲ Reset</button>
       <button class="ctrl" id="btnEditData" title="Edit data points and K value">✎ Edit Data</button>
       <div class="speed-wrap">
+        Mode
+        <select id="modeSelect" title="Choose visualization mode">
+          <option value="kmeans" selected>K-Means</option>
+          <option value="elbow">Elbow Method</option>
+          <option value="silhouette">Silhouette Analysis</option>
+        </select>
+      </div>
+      <div class="speed-wrap">
         Init
         <select id="initMethod" title="How the starting centroids are chosen">
           <option value="standard" selected>Standard</option>
@@ -816,7 +847,7 @@
 
   <div class="layout">
     <div class="math-panel" id="mathPanel"><!-- filled by JS --></div>
-    
+
     <div class="graph-panel">
       <div class="chart-card main">
         <h3>Cluster assignment <span class="sub" id="stepSub">step 0 of 0</span></h3>
@@ -854,7 +885,7 @@
             <input type="number" id="kInput" min="1" max="6" value="3">
           </div>
         </div>
-        
+
         <div class="data-editor">
           <h3>Edit Data Points</h3>
           <div class="data-editor-grid" id="dataEditorGrid"></div>
@@ -934,25 +965,37 @@
     const terms = rows.map(row => row.squared.toFixed(2)).join(" + ");
 
     let html = `<div class="wcss-box">`;
-    html += `<div class="wcss-title">${title}</div>`;
+    html += `<div class="wcss-title">${title} <span style="font-size:10px;font-weight:500;color:var(--ink-soft);margin-left:8px;">● Click row to see calculation</span></div>`;
     html += `<div class="wcss-formula">
       WCSS = Σ ||xᵢ − μ<sub>cluster(i)</sub>||²
     </div>`;
 
     html += `<div class="wcss-table-wrap"><table class="calc wcss-calc"><thead>
-      <tr><th>Pt</th><th>Cluster</th><th>Squared distance</th></tr>
+      <tr><th>Pt</th><th>Cluster</th><th>Distance²</th></tr>
     </thead><tbody>`;
 
-    rows.forEach(row => {
-      html += `<tr>
+    rows.forEach((row, idx) => {
+      const calculation = `(${fmt(row.point.x)} − ${fmt(row.centroid[0])})² + (${fmt(row.point.y)} − ${fmt(row.centroid[1])})² = ${fmt(row.dx)}² + ${fmt(row.dy)}² = ${fmt(row.dx * row.dx)} + ${fmt(row.dy * row.dy)} = ${fmt(row.squared)}`;
+      html += `<tr class="wcss-row" onclick="toggleWCSSDetail(${idx})" style="cursor:pointer;">
         <td>${row.point.name}</td>
         <td style="color:${CLUSTER_COLORS_SOLID_LIGHT[row.cluster]};font-weight:700;">C${row.cluster + 1}</td>
-        <td>${fmt(row.squared)}</td>
+        <td><strong>${fmt(row.squared)}</strong></td>
+      </tr>`;
+      html += `<tr class="wcss-detail" id="wcss-detail-${idx}" style="display:none;">
+        <td colspan="3" style="background:#F9FAFB;padding:12px;font-size:12px;line-height:1.8;border-top:1px dashed var(--border);">
+          <strong>Point:</strong> ${row.point.name} = (${fmt(row.point.x)}, ${fmt(row.point.y)})<br>
+          <strong>Centroid:</strong> C${row.cluster + 1} = (${fmt(row.centroid[0])}, ${fmt(row.centroid[1])})<br>
+          <strong>Calculation:</strong><br>
+          <div style="font-family:'IBM Plex Mono',monospace;margin-top:6px;color:#374151;">
+            ${calculation}
+          </div>
+        </td>
       </tr>`;
     });
 
     html += `</tbody></table></div>`;
     html += `<div class="wcss-work">
+      <strong>Sum of all squared distances:</strong><br>
       WCSS = ${terms}<br>
       <strong>WCSS = ${fmt(total)}</strong>
     </div>`;
@@ -965,6 +1008,29 @@
   // 2. BUILD FRAMES
   // ---------------------------------------------------------------
   let K = INITIAL_CENTROIDS.length;
+
+  function getMaxKForClustering() {
+    return Math.max(1, Math.min(POINTS.length, 6));
+  }
+
+  function getCurrentK() {
+    const input = document.getElementById("kInput");
+    const maxK = getMaxKForClustering();
+    const parsed = parseInt(input.value, 10);
+    const safeK = Math.max(1, Math.min(maxK, Number.isFinite(parsed) ? parsed : INITIAL_CENTROIDS.length));
+    input.max = String(maxK);
+    input.value = String(safeK);
+    return safeK;
+  }
+
+  function shuffledPoints() {
+    const out = [...POINTS];
+    for (let i = out.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [out[i], out[j]] = [out[j], out[i]];
+    }
+    return out;
+  }
 
   function padCentroids(list, k) {
     const out = list.map(c => c.slice());
@@ -993,7 +1059,10 @@
         Math.min(...chosenPoints.map(c => (p.x - c[0]) ** 2 + (p.y - c[1]) ** 2))
       );
       const sum = distSq.reduce((a, b) => a + b, 0);
-      const probs = distSq.map(d => d / sum);
+      const available = POINTS.map((_, i) => i).filter(i => !chosenIdx.includes(i));
+      const probs = sum > 0
+        ? distSq.map(d => d / sum)
+        : POINTS.map((_, i) => available.includes(i) ? 1 / available.length : 0);
       const r = Math.random();
       let cum = 0, pick = probs.length - 1;
       for (let i = 0; i < probs.length; i++) {
@@ -1021,7 +1090,17 @@
   }
 
   function buildFrames(method) {
-    K = parseInt(document.getElementById("kInput").value, 10);
+    const mode = document.getElementById("modeSelect").value;
+
+    // Special handling for Elbow and Silhouette modes
+    if (mode === "elbow") {
+      return buildElbowFrames();
+    } else if (mode === "silhouette") {
+      return buildSilhouetteFrames();
+    }
+
+    // Original K-Means logic
+    K = getCurrentK();
     const built = [];
     let startCentroids;
 
@@ -1125,6 +1204,15 @@
   // remains visible, even when a user enters a coordinate outside the
   // original 0..7 range.
   let xMin = -0.5, xMax = 10.5, yMin = -0.5, yMax = 7;
+
+  // Toggle WCSS calculation detail
+  window.toggleWCSSDetail = function(idx) {
+    const detailRow = document.getElementById(`wcss-detail-${idx}`);
+    if (detailRow) {
+      const isVisible = detailRow.style.display !== 'none';
+      detailRow.style.display = isVisible ? 'none' : 'table-row';
+    }
+  };
 
   function updateGraphScale() {
     const valuesX = [];
@@ -1263,6 +1351,21 @@
   mainSvg.appendChild(ptLayer);
   mainSvg.appendChild(centroidLayer);
 
+  function ensureClusterSvgLayers() {
+    const mounted = mainSvg.contains(gridLayer) &&
+      mainSvg.contains(linkLayer) &&
+      mainSvg.contains(ptLayer) &&
+      mainSvg.contains(centroidLayer);
+
+    if (mounted) return;
+
+    mainSvg.innerHTML = "";
+    mainSvg.appendChild(gridLayer);
+    mainSvg.appendChild(linkLayer);
+    mainSvg.appendChild(ptLayer);
+    mainSvg.appendChild(centroidLayer);
+  }
+
   // ---------------------------------------------------------------
   // 4. TOOLTIP FUNCTIONALITY
   // ---------------------------------------------------------------
@@ -1276,21 +1379,21 @@
     tooltipName.textContent = p.name;
     tooltipX.textContent = p.x.toFixed(2);
     tooltipY.textContent = p.y.toFixed(2);
-    
+
     const tooltipWidth = 120;
     const tooltipHeight = 70;
     const offset = 15;
-    
+
     let left = event.clientX + offset;
     let top = event.clientY + offset;
-    
+
     if (left + tooltipWidth > window.innerWidth) {
       left = event.clientX - tooltipWidth - offset;
     }
     if (top + tooltipHeight > window.innerHeight) {
       top = event.clientY - tooltipHeight - offset;
     }
-    
+
     tooltip.style.left = left + 'px';
     tooltip.style.top = top + 'px';
     tooltip.classList.add('visible');
@@ -1304,17 +1407,17 @@
     const tooltipWidth = 120;
     const tooltipHeight = 70;
     const offset = 15;
-    
+
     let left = event.clientX + offset;
     let top = event.clientY + offset;
-    
+
     if (left + tooltipWidth > window.innerWidth) {
       left = event.clientX - tooltipWidth - offset;
     }
     if (top + tooltipHeight > window.innerHeight) {
       top = event.clientY - tooltipHeight - offset;
     }
-    
+
     tooltip.style.left = left + 'px';
     tooltip.style.top = top + 'px';
   }
@@ -1329,7 +1432,7 @@
     pointEls = [];
     pointLabelEls = [];
     ptLayer.innerHTML = "";
-    
+
     POINTS.forEach((p, i) => {
       // Larger hit area for easier hovering
       const hitArea = el("circle", {
@@ -1338,42 +1441,42 @@
         style: "cursor: pointer;",
         "data-idx": i
       });
-      
+
       const c = el("circle", {
         cx: sx(p.x), cy: sy(p.y), r: 10,
-        class: "pt", 
-        fill: "#6B7280", 
-        stroke: "#111827", 
+        class: "pt",
+        fill: "#6B7280",
+        stroke: "#111827",
         "stroke-width": 2.5,
         style: "pointer-events: none; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2))",
         "data-idx": i
       });
-      
+
       const label = el("text", {
-        x: sx(p.x) + 16, y: sy(p.y) - 12, 
+        x: sx(p.x) + 16, y: sy(p.y) - 12,
         "font-size": 13,
-        fill: "#111827", 
+        fill: "#111827",
         "font-family": "IBM Plex Sans, sans-serif",
         "font-weight": "700",
         style: "pointer-events: none;"
       });
       label.textContent = p.name;
-      
+
       ptLayer.appendChild(hitArea);
       ptLayer.appendChild(c);
       ptLayer.appendChild(label);
-      
+
       // Event listeners on hit area
       hitArea.addEventListener("mouseenter", (e) => {
         c.setAttribute("r", 13);
         c.setAttribute("filter", "drop-shadow(0 0 8px rgba(99, 102, 241, 0.6))");
         showTooltip(i, e);
       });
-      
+
       hitArea.addEventListener("mousemove", (e) => {
         updateTooltipPosition(e);
       });
-      
+
       hitArea.addEventListener("mouseleave", () => {
         const frame = frames[currentIdx];
         const k = frame.assignments ? frame.assignments[i] : null;
@@ -1381,7 +1484,7 @@
         c.setAttribute("filter", "drop-shadow(0 2px 4px rgba(0,0,0,0.2))");
         hideTooltip();
       });
-      
+
       pointEls.push(c);
       pointLabelEls.push(label);
     });
@@ -1412,10 +1515,10 @@
 
   let centroidEls = [0, 1, 2].map(k => {
     const g = el("g", { class: "centroid" });
-    const star = el("path", { 
-      d: starPath(0, 0, 15), 
-      fill: CLUSTER_COLORS_SOLID_LIGHT[k], 
-      stroke: "#111827", 
+    const star = el("path", {
+      d: starPath(0, 0, 15),
+      fill: CLUSTER_COLORS_SOLID_LIGHT[k],
+      stroke: "#111827",
       "stroke-width": 2.5,
       style: "filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2))"
     });
@@ -1435,19 +1538,19 @@
   // ---------------------------------------------------------------
   const wcssSvg = document.getElementById("wcssSvg");
   const WW = 800, WH = 150, WPAD = 40;
-  
+
   function renderWcssChart(uptoFrameIdx) {
     wcssSvg.innerHTML = "";
     const wcssValues = frames.filter(f => f.wcss !== null).map(f => f.wcss);
     if (wcssValues.length === 0) return;
-    
+
     const wMax = Math.max(...wcssValues) * 1.1;
     function wx(i, total) { return WPAD + (i / Math.max(1, total - 1)) * (WW - 2 * WPAD); }
     function wy(v) { return WH - 30 - (v / wMax) * (WH - 50); }
 
     // Axis
     wcssSvg.appendChild(el("line", { x1: WPAD, y1: WH - 30, x2: WW - 20, y2: WH - 30, stroke: "#9CA3AF", "stroke-width": 2 }));
-    
+
     const seq = [];
     frames.forEach((f, idx) => { if (f.wcss !== null && idx <= uptoFrameIdx) seq.push({ idx, w: f.wcss, type: f.type }); });
     const total = frames.filter(f => f.wcss !== null).length;
@@ -1461,7 +1564,7 @@
       });
       wcssSvg.appendChild(el("path", { d, fill: "none", stroke: "#6366F1", "stroke-width": 3 }));
     }
-    
+
     // When the algorithm is still running, highlight only the latest WCSS point.
     // Once the algorithm is complete, mark ALL calculated WCSS points so the
     // whole convergence path is visually confirmed.
@@ -1482,11 +1585,11 @@
       // At completion, show the WCSS value beside EVERY point.
       // During the animation, show only the current/latest value.
       if (isComplete || isLast) {
-        const t = el("text", { 
-          x: px, y: py - 12, 
-          "text-anchor": "middle", 
-          "font-size": 13, 
-          "font-family": "IBM Plex Mono, monospace", 
+        const t = el("text", {
+          x: px, y: py - 12,
+          "text-anchor": "middle",
+          "font-size": 13,
+          "font-family": "IBM Plex Mono, monospace",
           fill: "#111827",
           "font-weight": "600"
         });
@@ -1580,7 +1683,92 @@
 
   function renderMathPanel(frame) {
     let html = "";
-    if (frame.type === "init") {
+
+    // Elbow Method frames
+    if (frame.type === "elbow-intro") {
+      html += `<span class="badge" style="background:#FEF3C7;color:#D97706;">elbow method</span>`;
+      html += `<h2 class="step-title">Elbow Method — Introduction</h2>`;
+      html += `<p class="step-desc">The <strong>Elbow Method</strong> helps determine the optimal number of clusters by plotting WCSS (Within-Cluster Sum of Squares) for different values of K.</p>`;
+      html += `<div class="formula-box"><div class="label">Goal</div><div class="formula">Find the "elbow" point where adding more clusters gives diminishing returns in WCSS reduction.</div></div>`;
+      html += `<div class="note">We'll test K = 1 to ${frame.totalSteps}, running K-Means for each value and recording the WCSS. Press <kbd>Next</kbd> to begin.</div>`;
+    } else if (frame.type === "elbow-computing") {
+      html += `<span class="badge" style="background:#FEF3C7;color:#D97706;">elbow method</span>`;
+      html += `<h2 class="step-title">Testing K = ${frame.currentK}</h2>`;
+      html += `<p class="step-desc">Running K-Means with <strong>K = ${frame.currentK}</strong> clusters (5 times to ensure stability)...</p>`;
+      html += `<div class="formula-box"><div class="label">WCSS Formula</div><div class="formula">WCSS = Σ(distance from each point to its centroid)²</div></div>`;
+      if (frame.results.length > 0) {
+        html += `<div class="stat-grid">`;
+        html += `<div class="stat"><div class="k">Tests Completed</div><div class="v">${frame.results.length} / ${frame.totalSteps}</div></div>`;
+        html += `</div>`;
+      }
+    } else if (frame.type === "elbow-result") {
+      html += `<span class="badge" style="background:#FEF3C7;color:#D97706;">elbow method</span>`;
+      html += `<h2 class="step-title">K = ${frame.currentK} — Result</h2>`;
+      html += `<p class="step-desc">With <strong>K = ${frame.currentK}</strong> clusters, the best WCSS (from 5 runs) is:</p>`;
+      html += `<div class="stat-grid">`;
+      html += `<div class="stat"><div class="k">K Value</div><div class="v">${frame.currentK}</div></div>`;
+      html += `<div class="stat"><div class="k">WCSS</div><div class="v">${fmt(frame.wcss)}</div></div>`;
+      html += `</div>`;
+      html += `<div class="formula-box"><div class="label">Progress</div><div class="formula">${frame.step} of ${frame.totalSteps} tests completed</div></div>`;
+      html += `<div class="note">The graph shows all tested K values so far. Notice how WCSS generally decreases as K increases.</div>`;
+    } else if (frame.type === "elbow-done") {
+      html += `<span class="badge done">analysis complete</span>`;
+      html += `<h2 class="step-title">Elbow Method — Recommendation</h2>`;
+      html += `<p class="step-desc">All K values tested. The <strong>elbow point</strong> is detected as the largest normalized bend in the WCSS curve.</p>`;
+      html += `<div class="stat-grid">`;
+      html += `<div class="stat"><div class="k">Recommended K</div><div class="v">${frame.elbowK}</div></div>`;
+      html += `<div class="stat"><div class="k">Tests Run</div><div class="v">${frame.results.length}</div></div>`;
+      html += `</div>`;
+      html += `<div class="formula-box"><div class="label">Why K = ${frame.elbowK}?</div><div class="formula">This point sits farthest from the straight line between the first and last WCSS values, where the curve bends most visibly.</div></div>`;
+      html += `<div class="note">✅ <strong>K = ${frame.elbowK}</strong> offers a good balance between cluster count and data fit. Beyond this, additional clusters provide diminishing improvement.</div>`;
+    }
+
+    // Silhouette Analysis frames
+    else if (frame.type === "silhouette-intro") {
+      html += `<span class="badge" style="background:#F3E8FF;color:#7C3AED;">silhouette analysis</span>`;
+      html += `<h2 class="step-title">Silhouette Analysis — Introduction</h2>`;
+      html += `<p class="step-desc">The <strong>Silhouette Score</strong> measures how well-separated and cohesive the clusters are. Scores range from -1 to +1.</p>`;
+      html += `<div class="formula-box"><div class="label">Silhouette Score</div><div class="formula">s(i) = (b - a) / max(a, b)<br><br>a = mean distance to same cluster<br>b = mean distance to nearest other cluster</div></div>`;
+      html += `<div class="note">Higher scores (closer to 1) indicate better-defined clusters. We'll test K = 2 to ${frame.totalSteps + 1}. Press <kbd>Next</kbd> to begin.</div>`;
+    } else if (frame.type === "silhouette-computing") {
+      html += `<span class="badge" style="background:#F3E8FF;color:#7C3AED;">silhouette analysis</span>`;
+      html += `<h2 class="step-title">Testing K = ${frame.currentK}</h2>`;
+      html += `<p class="step-desc">Running K-Means with <strong>K = ${frame.currentK}</strong> clusters, then calculating silhouette scores for each point...</p>`;
+      html += `<div class="formula-box"><div class="label">Process</div><div class="formula">1. Run K-Means (5 times)<br>2. Calculate silhouette for each point<br>3. Average all scores</div></div>`;
+      if (frame.results.length > 0) {
+        html += `<div class="stat-grid">`;
+        html += `<div class="stat"><div class="k">Tests Completed</div><div class="v">${frame.results.length} / ${frame.totalSteps}</div></div>`;
+        html += `</div>`;
+      }
+    } else if (frame.type === "silhouette-result") {
+      html += `<span class="badge" style="background:#F3E8FF;color:#7C3AED;">silhouette analysis</span>`;
+      html += `<h2 class="step-title">K = ${frame.currentK} — Result</h2>`;
+      html += `<p class="step-desc">With <strong>K = ${frame.currentK}</strong> clusters, the silhouette analysis shows:</p>`;
+      html += `<div class="stat-grid">`;
+      html += `<div class="stat"><div class="k">K Value</div><div class="v">${frame.currentK}</div></div>`;
+      html += `<div class="stat"><div class="k">Silhouette Score</div><div class="v">${fmt(frame.silhouette)}</div></div>`;
+      html += `</div>`;
+      html += `<div class="formula-box"><div class="label">Score Interpretation</div><div class="formula">`;
+      if (frame.silhouette > 0.7) html += `Excellent: Strong, well-separated clusters`;
+      else if (frame.silhouette > 0.5) html += `Good: Reasonable cluster structure`;
+      else if (frame.silhouette > 0.25) html += `Fair: Weak cluster structure`;
+      else html += `Poor: Clusters may overlap significantly`;
+      html += `</div></div>`;
+      html += `<div class="note">Progress: ${frame.step} of ${frame.totalSteps} tests completed. The graph shows all tested K values.</div>`;
+    } else if (frame.type === "silhouette-done") {
+      html += `<span class="badge done">analysis complete</span>`;
+      html += `<h2 class="step-title">Silhouette Analysis — Recommendation</h2>`;
+      html += `<p class="step-desc">All K values tested. The highest silhouette score indicates the best cluster separation.</p>`;
+      html += `<div class="stat-grid">`;
+      html += `<div class="stat"><div class="k">Recommended K</div><div class="v">${frame.bestK}</div></div>`;
+      html += `<div class="stat"><div class="k">Best Score</div><div class="v">${fmt(frame.bestScore)}</div></div>`;
+      html += `</div>`;
+      html += `<div class="formula-box"><div class="label">Why K = ${frame.bestK}?</div><div class="formula">This K value has the highest average silhouette score, meaning the clusters are most well-separated and cohesive.</div></div>`;
+      html += `<div class="note">✅ <strong>K = ${frame.bestK}</strong> produces the best cluster quality (score: ${fmt(frame.bestScore)}). Points are well-assigned to their clusters with good separation.</div>`;
+    }
+
+    // Original K-Means frames
+    else if (frame.type === "init") {
       html += `<span class="badge">setup</span>`;
       html += `<h2 class="step-title">Initial centroids</h2>`;
       html += `<p class="step-desc">K = ${K} was chosen ahead of time. These starting positions match the notes' worked example. Press <kbd>Next</kbd> or <kbd>Play</kbd> to begin the assign → update loop.</p>`;
@@ -1722,6 +1910,21 @@
     const frame = frames[idx];
     currentIdx = idx;
 
+    const mode = document.getElementById("modeSelect").value;
+
+    // Handle Elbow/Silhouette modes
+    if (mode === "elbow") {
+      renderElbowFrame(frame, idx);
+      return;
+    } else if (mode === "silhouette") {
+      renderSilhouetteFrame(frame, idx);
+      return;
+    }
+
+    // Original K-Means rendering
+    ensureClusterSvgLayers();
+    legendEl.style.display = "";
+
     // Point colors
     if (frame.type === "pp-select") {
       POINTS.forEach((p, i) => {
@@ -1810,12 +2013,35 @@
   }
 
   const initSelect = document.getElementById("initMethod");
+  const modeSelect = document.getElementById("modeSelect");
 
   function rebuild() {
     stopPlaying();
+    const mode = modeSelect.value;
+
+    // Show/hide appropriate UI elements based on mode
+    if (mode === "elbow" || mode === "silhouette") {
+      document.querySelector('.chart-card.main').style.display = 'flex';
+      document.querySelector('.chart-card.mini').style.display = 'none'; // Hide mini chart in analysis modes
+
+      // Hide K-Means specific controls
+      initSelect.disabled = true;
+      initSelect.style.opacity = "0.5";
+    } else {
+      document.querySelector('.chart-card.main').style.display = 'flex';
+      document.querySelector('.chart-card.mini').style.display = 'flex';
+      document.querySelector('.chart-card.mini h3').innerHTML = 'WCSS (inertia) after each step <span class="sub">lower = tighter clusters</span>';
+
+      // Enable K-Means specific controls
+      initSelect.disabled = false;
+      initSelect.style.opacity = "1";
+    }
+
     frames = buildFrames(initSelect.value);
     goTo(0, false);
   }
+
+  modeSelect.addEventListener("change", rebuild);
 
   function rebuildVisualization() {
     stopPlaying();
@@ -1826,15 +2052,15 @@
     frames = buildFrames(initSelect.value);
     updateGraphScale();
     renderGrid();
-    
+
     // Clear existing
     ptLayer.innerHTML = "";
     linkLayer.innerHTML = "";
     centroidLayer.innerHTML = "";
-    
+
     // Rebuild points
     createPoints();
-    
+
     // Rebuild links
     linkEls = [];
     POINTS.forEach(() => {
@@ -1842,17 +2068,17 @@
       linkLayer.appendChild(l);
       linkEls.push(l);
     });
-    
+
     // Rebuild centroids
     centroidEls = [];
-    const currentK = parseInt(document.getElementById("kInput").value, 10);
+    const currentK = getCurrentK();
     for (let k = 0; k < Math.max(currentK, 6); k++) {
       const g = el("g", { class: "centroid" });
       const colorIdx = k % CLUSTER_COLORS_SOLID_LIGHT.length;
-      const star = el("path", { 
-        d: starPath(0, 0, 15), 
-        fill: CLUSTER_COLORS_SOLID_LIGHT[colorIdx], 
-        stroke: "#111827", 
+      const star = el("path", {
+        d: starPath(0, 0, 15),
+        fill: CLUSTER_COLORS_SOLID_LIGHT[colorIdx],
+        stroke: "#111827",
         "stroke-width": 2.5,
         style: "filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2))"
       });
@@ -1860,10 +2086,10 @@
       centroidLayer.appendChild(g);
       centroidEls.push({ g, star });
     }
-    
+
     // Update dataset info
     document.getElementById("datasetInfo").textContent = `${POINTS.length} points · K = ${currentK}`;
-    
+
     goTo(0, false);
   }
 
@@ -1913,7 +2139,788 @@
   });
 
   // ---------------------------------------------------------------
-  // 10. EVENT LISTENERS
+  // 10. ELBOW & SILHOUETTE ANALYSIS
+  // ---------------------------------------------------------------
+
+  // Build step-by-step frames for Elbow Method
+  function buildElbowFrames() {
+    const maxK = Math.min(POINTS.length - 1, 6);
+    const built = [];
+
+    // Introduction frame
+    built.push({
+      type: "elbow-intro",
+      step: 0,
+      totalSteps: maxK,
+      results: [],
+      currentK: null
+    });
+
+    // Run K-Means for each K value
+    const allResults = [];
+    for (let k = 1; k <= maxK; k++) {
+      // Add "computing" frame
+      built.push({
+        type: "elbow-computing",
+        step: k,
+        totalSteps: maxK,
+        currentK: k,
+        results: [...allResults]
+      });
+
+      // Run K-Means multiple times
+      const runs = [];
+      for (let run = 0; run < 5; run++) {
+        runs.push(runKMeansForK(k));
+      }
+      const best = runs.reduce((a, b) => a.wcss < b.wcss ? a : b);
+
+      allResults.push({ k, wcss: best.wcss, centroids: best.centroids, assignments: best.assignments });
+
+      // Add "result" frame showing this K's result
+      built.push({
+        type: "elbow-result",
+        step: k,
+        totalSteps: maxK,
+        currentK: k,
+        results: [...allResults],
+        wcss: best.wcss,
+        centroids: best.centroids,
+        assignments: best.assignments
+      });
+    }
+
+    // Final analysis frame
+    const elbowK = findElbowPoint(allResults);
+    built.push({
+      type: "elbow-done",
+      results: allResults,
+      elbowK: elbowK,
+      totalSteps: maxK
+    });
+
+    return built;
+  }
+
+  // Build step-by-step frames for Silhouette Analysis
+  function buildSilhouetteFrames() {
+    const maxK = Math.min(POINTS.length - 1, 6);
+    const built = [];
+
+    // Introduction frame
+    built.push({
+      type: "silhouette-intro",
+      step: 0,
+      totalSteps: maxK - 1,
+      results: [],
+      currentK: null
+    });
+
+    if (maxK < 2) {
+      built.push({
+        type: "silhouette-done",
+        results: [],
+        bestK: "N/A",
+        bestScore: 0,
+        totalSteps: 0
+      });
+      return built;
+    }
+
+    // Run K-Means for each K value (starting from K=2)
+    const allResults = [];
+    for (let k = 2; k <= maxK; k++) {
+      // Add "computing" frame
+      built.push({
+        type: "silhouette-computing",
+        step: k - 1,
+        totalSteps: maxK - 1,
+        currentK: k,
+        results: [...allResults]
+      });
+
+      // Run K-Means multiple times
+      const runs = [];
+      for (let run = 0; run < 5; run++) {
+        runs.push(runKMeansForK(k));
+      }
+      const best = runs.reduce((a, b) => a.wcss < b.wcss ? a : b);
+      const silhouette = calculateSilhouetteScore(best.assignments, k);
+
+      allResults.push({
+        k,
+        wcss: best.wcss,
+        silhouette,
+        centroids: best.centroids,
+        assignments: best.assignments
+      });
+
+      // Add "result" frame showing this K's result with silhouette calculation
+      built.push({
+        type: "silhouette-result",
+        step: k - 1,
+        totalSteps: maxK - 1,
+        currentK: k,
+        results: [...allResults],
+        silhouette,
+        centroids: best.centroids,
+        assignments: best.assignments
+      });
+    }
+
+    // Final analysis frame
+    const bestK = allResults.reduce((a, b) => a.silhouette > b.silhouette ? a : b);
+    built.push({
+      type: "silhouette-done",
+      results: allResults,
+      bestK: bestK.k,
+      bestScore: bestK.silhouette,
+      totalSteps: maxK - 1
+    });
+
+    return built;
+  }
+
+  function findElbowPoint(results) {
+    if (!results.length) return 1;
+    if (results.length <= 2) return results[results.length - 1].k;
+
+    const kValues = results.map(r => r.k);
+    const wcssValues = results.map(r => r.wcss);
+    const minK = Math.min(...kValues);
+    const maxK = Math.max(...kValues);
+    const minWCSS = Math.min(...wcssValues);
+    const maxWCSS = Math.max(...wcssValues);
+
+    const normalize = (r) => ({
+      k: r.k,
+      x: (r.k - minK) / (maxK - minK || 1),
+      y: (r.wcss - minWCSS) / (maxWCSS - minWCSS || 1)
+    });
+
+    const start = normalize(results[0]);
+    const end = normalize(results[results.length - 1]);
+    const denom = Math.hypot(end.x - start.x, end.y - start.y) || 1;
+    let elbowK = results[1].k;
+    let bestDistance = -Infinity;
+
+    for (let i = 1; i < results.length - 1; i++) {
+      const point = normalize(results[i]);
+      const distance = Math.abs(
+        (end.x - start.x) * (start.y - point.y) -
+        (start.x - point.x) * (end.y - start.y)
+      ) / denom;
+
+      if (distance > bestDistance) {
+        bestDistance = distance;
+        elbowK = point.k;
+      }
+    }
+
+    return elbowK;
+  }
+
+  function runKMeansForK(k, maxIter = 20) {
+    // Run K-Means for a specific K value and return final WCSS and assignments
+    let centroids = [];
+
+    // Random initialization
+    const shuffled = shuffledPoints();
+    for (let i = 0; i < k; i++) {
+      centroids.push([shuffled[i].x, shuffled[i].y]);
+    }
+
+    let assignments = [];
+
+    for (let iter = 0; iter < maxIter; iter++) {
+      // Assign
+      const distances = POINTS.map(p => centroids.map(c => dist([p.x, p.y], c)));
+      const newAssignments = distances.map(d => d.indexOf(Math.min(...d)));
+
+      // Check convergence
+      if (iter > 0 && newAssignments.every((a, i) => a === assignments[i])) {
+        break;
+      }
+
+      assignments = newAssignments;
+
+      // Update
+      centroids = centroids.map((c, ki) => {
+        const members = POINTS.filter((_, i) => assignments[i] === ki);
+        return members.length ? mean(members) : c.slice();
+      });
+    }
+
+    const wcss = computeWCSS(centroids, assignments);
+    return { wcss, assignments, centroids };
+  }
+
+  function calculateSilhouetteScore(assignments, k) {
+    if (k === 1) return 0;
+
+    const silhouettes = POINTS.map((p, i) => {
+      const myCluster = assignments[i];
+
+      // a(i): mean distance to points in same cluster
+      const sameCluster = POINTS.filter((_, j) => assignments[j] === myCluster && j !== i);
+      if (sameCluster.length === 0) return 0;
+
+      const a = sameCluster.reduce((sum, q) => sum + dist([p.x, p.y], [q.x, q.y]), 0) / sameCluster.length;
+
+      // b(i): mean distance to points in nearest different cluster
+      let minB = Infinity;
+      for (let otherCluster = 0; otherCluster < k; otherCluster++) {
+        if (otherCluster === myCluster) continue;
+        const otherPoints = POINTS.filter((_, j) => assignments[j] === otherCluster);
+        if (otherPoints.length === 0) continue;
+
+        const b = otherPoints.reduce((sum, q) => sum + dist([p.x, p.y], [q.x, q.y]), 0) / otherPoints.length;
+        minB = Math.min(minB, b);
+      }
+
+      if (minB === Infinity) return 0;
+
+      // s(i) = (b - a) / max(a, b)
+      return (minB - a) / Math.max(a, minB);
+    });
+
+    return silhouettes.reduce((sum, s) => sum + s, 0) / silhouettes.length;
+  }
+
+  function analyzeOptimalK() {
+    const maxK = Math.min(POINTS.length - 1, 6);
+    const results = [];
+
+    // Run K-Means for K = 1 to maxK
+    for (let k = 1; k <= maxK; k++) {
+      const runs = [];
+      // Run multiple times and take best result (to handle randomness)
+      for (let run = 0; run < 5; run++) {
+        runs.push(runKMeansForK(k));
+      }
+
+      // Pick run with lowest WCSS
+      const best = runs.reduce((a, b) => a.wcss < b.wcss ? a : b);
+      const silhouette = k > 1 ? calculateSilhouetteScore(best.assignments, k) : 0;
+
+      results.push({ k, wcss: best.wcss, silhouette });
+    }
+
+    return results;
+  }
+
+  function drawElbowChart(results) {
+    const svg = document.getElementById("elbowSvg");
+    const W = 500, H = 300, PAD = 60;
+    svg.innerHTML = "";
+
+    const maxWCSS = Math.max(1, Math.max(...results.map(r => r.wcss)) * 1.05);
+    const minWCSS = 0;
+    const wcssRange = maxWCSS - minWCSS || 1;
+
+    const sx = (k) => PAD + ((k - 1) / Math.max(1, results.length - 1)) * (W - 2 * PAD);
+    const sy = (wcss) => H - PAD - ((wcss - minWCSS) / wcssRange) * (H - 2 * PAD);
+
+    // Grid
+    const g = el("g", {});
+    for (let i = 0; i < results.length; i++) {
+      const k = results[i].k;
+      g.appendChild(el("line", {
+        x1: sx(k), y1: H - PAD, x2: sx(k), y2: PAD - 20,
+        stroke: "#E5E7EB", "stroke-width": 1
+      }));
+      g.appendChild(el("text", {
+        x: sx(k), y: H - PAD + 20,
+        "text-anchor": "middle",
+        "font-size": 13,
+        fill: "#374151",
+        "font-family": "IBM Plex Sans",
+        "font-weight": "600"
+      })).textContent = k;
+    }
+
+    // Y-axis lines
+    for (let i = 0; i <= 4; i++) {
+      const wcss = minWCSS + (wcssRange * i / 4);
+      const y = sy(wcss);
+      g.appendChild(el("line", {
+        x1: PAD, y1: y, x2: W - 20, y2: y,
+        stroke: "#E5E7EB", "stroke-width": 1
+      }));
+      g.appendChild(el("text", {
+        x: PAD - 10, y: y + 4,
+        "text-anchor": "end",
+        "font-size": 12,
+        fill: "#374151",
+        "font-family": "IBM Plex Mono"
+      })).textContent = wcss.toFixed(1);
+    }
+    svg.appendChild(g);
+
+    // Axes
+    svg.appendChild(el("line", {
+      x1: PAD, y1: H - PAD, x2: W - 20, y2: H - PAD,
+      stroke: "#374151", "stroke-width": 2
+    }));
+    svg.appendChild(el("line", {
+      x1: PAD, y1: H - PAD, x2: PAD, y2: PAD - 20,
+      stroke: "#374151", "stroke-width": 2
+    }));
+
+    // Labels
+    const xLabel = el("text", {
+      x: W / 2, y: H - 10,
+      "text-anchor": "middle",
+      "font-size": 14,
+      fill: "#111827",
+      "font-weight": "700"
+    });
+    xLabel.textContent = "Number of Clusters (K)";
+    svg.appendChild(xLabel);
+
+    const yLabel = el("text", {
+      x: 15, y: H / 2,
+      "text-anchor": "middle",
+      "font-size": 14,
+      fill: "#111827",
+      "font-weight": "700",
+      transform: `rotate(-90 15 ${H / 2})`
+    });
+    yLabel.textContent = "WCSS (Within-Cluster Sum of Squares)";
+    svg.appendChild(yLabel);
+
+    // Line
+    let pathD = "";
+    results.forEach((r, i) => {
+      const x = sx(r.k);
+      const y = sy(r.wcss);
+      pathD += (i === 0 ? "M" : "L") + x + "," + y + " ";
+    });
+    svg.appendChild(el("path", {
+      d: pathD,
+      fill: "none",
+      stroke: "#EC4899",
+      "stroke-width": 3
+    }));
+
+    // Points
+    results.forEach(r => {
+      const x = sx(r.k);
+      const y = sy(r.wcss);
+      svg.appendChild(el("circle", {
+        cx: x, cy: y, r: 5,
+        fill: "#EC4899",
+        stroke: "#FFFFFF",
+        "stroke-width": 2
+      }));
+    });
+  }
+
+  function drawSilhouetteChart(results) {
+    const svg = document.getElementById("silhouetteSvg");
+    const W = 500, H = 300, PAD = 60;
+    svg.innerHTML = "";
+
+    const validResults = results.filter(r => r.k > 1);
+    if (validResults.length === 0) return;
+
+    const maxScore = 1;
+    const minScore = -1;
+    const scoreRange = maxScore - minScore;
+
+    const sx = (k) => PAD + ((k - 2) / Math.max(1, validResults.length - 1)) * (W - 2 * PAD);
+    const sy = (score) => H - PAD - ((score - minScore) / scoreRange) * (H - 2 * PAD);
+
+    // Grid
+    const g = el("g", {});
+    validResults.forEach((r, i) => {
+      const k = r.k;
+      g.appendChild(el("line", {
+        x1: sx(k), y1: H - PAD, x2: sx(k), y2: PAD - 20,
+        stroke: "#E5E7EB", "stroke-width": 1
+      }));
+      g.appendChild(el("text", {
+        x: sx(k), y: H - PAD + 20,
+        "text-anchor": "middle",
+        "font-size": 13,
+        fill: "#374151",
+        "font-family": "IBM Plex Sans",
+        "font-weight": "600"
+      })).textContent = k;
+    });
+
+    // Y-axis lines
+    for (let i = 0; i <= 4; i++) {
+      const score = minScore + (scoreRange * i / 4);
+      const y = sy(score);
+      g.appendChild(el("line", {
+        x1: PAD, y1: y, x2: W - 20, y2: y,
+        stroke: "#E5E7EB", "stroke-width": 1
+      }));
+      g.appendChild(el("text", {
+        x: PAD - 10, y: y + 4,
+        "text-anchor": "end",
+        "font-size": 12,
+        fill: "#374151",
+        "font-family": "IBM Plex Mono"
+      })).textContent = score.toFixed(2);
+    }
+    svg.appendChild(g);
+
+    // Axes
+    svg.appendChild(el("line", {
+      x1: PAD, y1: H - PAD, x2: W - 20, y2: H - PAD,
+      stroke: "#374151", "stroke-width": 2
+    }));
+    svg.appendChild(el("line", {
+      x1: PAD, y1: H - PAD, x2: PAD, y2: PAD - 20,
+      stroke: "#374151", "stroke-width": 2
+    }));
+
+    // Labels
+    const xLabel = el("text", {
+      x: W / 2, y: H - 10,
+      "text-anchor": "middle",
+      "font-size": 14,
+      fill: "#111827",
+      "font-weight": "700"
+    });
+    xLabel.textContent = "Number of Clusters (K)";
+    svg.appendChild(xLabel);
+
+    const yLabel = el("text", {
+      x: 15, y: H / 2,
+      "text-anchor": "middle",
+      "font-size": 14,
+      fill: "#111827",
+      "font-weight": "700",
+      transform: `rotate(-90 15 ${H / 2})`
+    });
+    yLabel.textContent = "Silhouette Score";
+    svg.appendChild(yLabel);
+
+    // Line
+    let pathD = "";
+    validResults.forEach((r, i) => {
+      const x = sx(r.k);
+      const y = sy(r.silhouette);
+      pathD += (i === 0 ? "M" : "L") + x + "," + y + " ";
+    });
+    svg.appendChild(el("path", {
+      d: pathD,
+      fill: "none",
+      stroke: "#8B5CF6",
+      "stroke-width": 3
+    }));
+
+    // Points
+    validResults.forEach(r => {
+      const x = sx(r.k);
+      const y = sy(r.silhouette);
+      svg.appendChild(el("circle", {
+        cx: x, cy: y, r: 5,
+        fill: "#8B5CF6",
+        stroke: "#FFFFFF",
+        "stroke-width": 2
+      }));
+    });
+  }
+
+  function findOptimalK(results) {
+    const elbowK = findElbowPoint(results);
+
+    // Find best silhouette
+    const validResults = results.filter(r => r.k > 1);
+    const bestSilhouette = validResults.reduce((a, b) => a.silhouette > b.silhouette ? a : b);
+
+    return { elbowK, silhouetteK: bestSilhouette.k, bestSilhouette: bestSilhouette.silhouette };
+  }
+
+  function renderElbowFrame(frame, idx) {
+    // Show only main chart, hide mini
+    document.querySelector('.chart-card.main').style.display = 'flex';
+    document.querySelector('.chart-card.mini').style.display = 'none';
+    legendEl.style.display = "none";
+
+    // Update main chart to show elbow analysis
+    document.querySelector('.chart-card.main h3').innerHTML = 'Elbow Method <span class="sub">WCSS vs Number of Clusters (K)</span>';
+    const mainSvg = document.getElementById("mainSvg");
+    mainSvg.innerHTML = "";
+
+    if (frame.results && frame.results.length > 0) {
+      const results = frame.results;
+      const W = 800, H = 600, PAD = 80;
+
+      const maxWCSS = Math.max(1, Math.max(...results.map(r => r.wcss)) * 1.05);
+      const minWCSS = 0;
+      const wcssRange = maxWCSS - minWCSS;
+
+      const sx = (k) => PAD + ((k - 1) / Math.max(1, frame.totalSteps - 1)) * (W - 2 * PAD);
+      const sy = (wcss) => H - PAD - ((wcss - minWCSS) / wcssRange) * (H - 2 * PAD);
+
+      // Grid
+      const g = el("g", {});
+      for (let k = 1; k <= frame.totalSteps; k++) {
+        g.appendChild(el("line", {
+          x1: sx(k), y1: H - PAD, x2: sx(k), y2: PAD - 20,
+          stroke: "#E5E7EB", "stroke-width": 1
+        }));
+        g.appendChild(el("text", {
+          x: sx(k), y: H - PAD + 24,
+          "text-anchor": "middle", "font-size": 16,
+          fill: "#374151", "font-family": "IBM Plex Sans", "font-weight": "600"
+        })).textContent = k;
+      }
+
+      // Y-axis grid and labels
+      for (let i = 0; i <= 5; i++) {
+        const wcss = minWCSS + (wcssRange * i / 5);
+        const y = sy(wcss);
+        g.appendChild(el("line", {
+          x1: PAD, y1: y, x2: W - PAD + 20, y2: y,
+          stroke: "#E5E7EB", "stroke-width": 1
+        }));
+        g.appendChild(el("text", {
+          x: PAD - 16, y: y + 5,
+          "text-anchor": "end", "font-size": 14,
+          fill: "#374151", "font-family": "IBM Plex Mono", "font-weight": "600"
+        })).textContent = wcss.toFixed(1);
+      }
+      mainSvg.appendChild(g);
+
+      // Axes
+      mainSvg.appendChild(el("line", {
+        x1: PAD, y1: H - PAD, x2: W - PAD + 20, y2: H - PAD,
+        stroke: "#374151", "stroke-width": 2.5
+      }));
+      mainSvg.appendChild(el("line", {
+        x1: PAD, y1: H - PAD, x2: PAD, y2: PAD - 20,
+        stroke: "#374151", "stroke-width": 2.5
+      }));
+
+      // Axis labels
+      const xLabel = el("text", {
+        x: W / 2, y: H - 18,
+        "text-anchor": "middle", "font-size": 15,
+        fill: "#111827", "font-weight": "700"
+      });
+      xLabel.textContent = "Number of Clusters (K)";
+      mainSvg.appendChild(xLabel);
+
+      const yLabel = el("text", {
+        x: 22, y: H / 2,
+        "text-anchor": "middle", "font-size": 15,
+        fill: "#111827", "font-weight": "700",
+        transform: `rotate(-90 22 ${H / 2})`
+      });
+      yLabel.textContent = "WCSS (Within-Cluster Sum of Squares)";
+      mainSvg.appendChild(yLabel);
+
+      // Line
+      if (results.length > 1) {
+        let pathD = "";
+        results.forEach((r, i) => {
+          pathD += (i === 0 ? "M" : "L") + sx(r.k) + "," + sy(r.wcss) + " ";
+        });
+        mainSvg.appendChild(el("path", {
+          d: pathD, fill: "none", stroke: "#EC4899", "stroke-width": 4
+        }));
+      }
+
+      // Points
+      results.forEach((r, i) => {
+        const isElbow = frame.type === "elbow-done" && r.k === frame.elbowK;
+        const isCurrent = frame.type === "elbow-result" && r.k === frame.currentK;
+
+        mainSvg.appendChild(el("circle", {
+          cx: sx(r.k), cy: sy(r.wcss),
+          r: isElbow ? 12 : (isCurrent ? 10 : 8),
+          fill: isElbow ? "#10B981" : (isCurrent ? "#EC4899" : "#EC4899"),
+          stroke: "#FFFFFF", "stroke-width": 3
+        }));
+
+        // Value label
+        const t = el("text", {
+          x: sx(r.k), y: sy(r.wcss) - 20,
+          "text-anchor": "middle", "font-size": 13,
+          fill: isElbow ? "#10B981" : "#EC4899",
+          "font-family": "IBM Plex Mono", "font-weight": "700"
+        });
+        t.textContent = r.wcss.toFixed(2);
+        mainSvg.appendChild(t);
+
+        if (isElbow) {
+          const elbowLabel = el("text", {
+            x: sx(r.k), y: sy(r.wcss) + 30,
+            "text-anchor": "middle", "font-size": 15,
+            fill: "#10B981", "font-family": "IBM Plex Sans", "font-weight": "700"
+          });
+          elbowLabel.textContent = "← ELBOW";
+          mainSvg.appendChild(elbowLabel);
+        }
+      });
+    }
+
+    renderMathPanel(frame);
+    document.getElementById("stepSub").textContent = `step ${idx} of ${frames.length - 1}`;
+    document.getElementById("progressFill").style.width = `${(idx / (frames.length - 1)) * 100}%`;
+    document.getElementById("btnPrev").disabled = idx === 0;
+    document.getElementById("btnNext").disabled = idx === frames.length - 1;
+    if (idx === frames.length - 1) stopPlaying();
+  }
+
+  function renderSilhouetteFrame(frame, idx) {
+    // Show only main chart, hide mini
+    document.querySelector('.chart-card.main').style.display = 'flex';
+    document.querySelector('.chart-card.mini').style.display = 'none';
+    legendEl.style.display = "none";
+
+    // Update main chart to show silhouette analysis
+    document.querySelector('.chart-card.main h3').innerHTML = 'Silhouette Analysis <span class="sub">Score vs Number of Clusters (K)</span>';
+    const mainSvg = document.getElementById("mainSvg");
+    mainSvg.innerHTML = "";
+
+    if (frame.results && frame.results.length > 0) {
+      const results = frame.results;
+      const W = 800, H = 600, PAD = 80;
+
+      const maxScore = 1;
+      const minScore = -1;
+      const scoreRange = maxScore - minScore;
+
+      const sx = (k) => PAD + ((k - 2) / Math.max(1, frame.totalSteps - 1)) * (W - 2 * PAD);
+      const sy = (score) => H - PAD - ((score - minScore) / scoreRange) * (H - 2 * PAD);
+
+      // Score interpretation zones sit behind the plotted line and points.
+      const zoneLayer = el("g", {});
+      [
+        { min: 0.7, max: 1, color: "#D1FAE5" },
+        { min: 0.5, max: 0.7, color: "#FEF3C7" },
+        { min: 0.25, max: 0.5, color: "#FED7AA" }
+      ].forEach(zone => {
+        const yTop = sy(zone.max);
+        const yBottom = sy(zone.min);
+        zoneLayer.appendChild(el("rect", {
+          x: PAD, y: yTop,
+          width: W - 2 * PAD + 20, height: yBottom - yTop,
+          fill: zone.color, opacity: 0.2
+        }));
+      });
+      mainSvg.appendChild(zoneLayer);
+
+      // Grid
+      const g = el("g", {});
+      for (let k = 2; k <= frame.totalSteps + 1; k++) {
+        g.appendChild(el("line", {
+          x1: sx(k), y1: H - PAD, x2: sx(k), y2: PAD - 20,
+          stroke: "#E5E7EB", "stroke-width": 1
+        }));
+        g.appendChild(el("text", {
+          x: sx(k), y: H - PAD + 24,
+          "text-anchor": "middle", "font-size": 16,
+          fill: "#374151", "font-family": "IBM Plex Sans", "font-weight": "600"
+        })).textContent = k;
+      }
+
+      // Y-axis grid and labels
+      for (let i = 0; i <= 5; i++) {
+        const score = minScore + (scoreRange * i / 5);
+        const y = sy(score);
+        g.appendChild(el("line", {
+          x1: PAD, y1: y, x2: W - PAD + 20, y2: y,
+          stroke: "#E5E7EB", "stroke-width": 1
+        }));
+        g.appendChild(el("text", {
+          x: PAD - 16, y: y + 5,
+          "text-anchor": "end", "font-size": 14,
+          fill: "#374151", "font-family": "IBM Plex Mono", "font-weight": "600"
+        })).textContent = score.toFixed(2);
+      }
+      mainSvg.appendChild(g);
+
+      // Axes
+      mainSvg.appendChild(el("line", {
+        x1: PAD, y1: H - PAD, x2: W - PAD + 20, y2: H - PAD,
+        stroke: "#374151", "stroke-width": 2.5
+      }));
+      mainSvg.appendChild(el("line", {
+        x1: PAD, y1: H - PAD, x2: PAD, y2: PAD - 20,
+        stroke: "#374151", "stroke-width": 2.5
+      }));
+
+      // Axis labels
+      const xLabel = el("text", {
+        x: W / 2, y: H - 18,
+        "text-anchor": "middle", "font-size": 15,
+        fill: "#111827", "font-weight": "700"
+      });
+      xLabel.textContent = "Number of Clusters (K)";
+      mainSvg.appendChild(xLabel);
+
+      const yLabel = el("text", {
+        x: 22, y: H / 2,
+        "text-anchor": "middle", "font-size": 15,
+        fill: "#111827", "font-weight": "700",
+        transform: `rotate(-90 22 ${H / 2})`
+      });
+      yLabel.textContent = "Silhouette Score";
+      mainSvg.appendChild(yLabel);
+
+      // Line
+      if (results.length > 1) {
+        let pathD = "";
+        results.forEach((r, i) => {
+          pathD += (i === 0 ? "M" : "L") + sx(r.k) + "," + sy(r.silhouette) + " ";
+        });
+        mainSvg.appendChild(el("path", {
+          d: pathD, fill: "none", stroke: "#8B5CF6", "stroke-width": 4
+        }));
+      }
+
+      // Points
+      results.forEach((r, i) => {
+        const isBest = frame.type === "silhouette-done" && r.k === frame.bestK;
+        const isCurrent = frame.type === "silhouette-result" && r.k === frame.currentK;
+
+        mainSvg.appendChild(el("circle", {
+          cx: sx(r.k), cy: sy(r.silhouette),
+          r: isBest ? 12 : (isCurrent ? 10 : 8),
+          fill: isBest ? "#10B981" : (isCurrent ? "#8B5CF6" : "#8B5CF6"),
+          stroke: "#FFFFFF", "stroke-width": 3
+        }));
+
+        // Value label
+        const t = el("text", {
+          x: sx(r.k), y: sy(r.silhouette) - 20,
+          "text-anchor": "middle", "font-size": 13,
+          fill: isBest ? "#10B981" : "#8B5CF6",
+          "font-family": "IBM Plex Mono", "font-weight": "700"
+        });
+        t.textContent = r.silhouette.toFixed(3);
+        mainSvg.appendChild(t);
+
+        if (isBest) {
+          const bestLabel = el("text", {
+            x: sx(r.k), y: sy(r.silhouette) + 30,
+            "text-anchor": "middle", "font-size": 15,
+            fill: "#10B981", "font-family": "IBM Plex Sans", "font-weight": "700"
+          });
+          bestLabel.textContent = "← BEST";
+          mainSvg.appendChild(bestLabel);
+        }
+      });
+    }
+
+    renderMathPanel(frame);
+    document.getElementById("stepSub").textContent = `step ${idx} of ${frames.length - 1}`;
+    document.getElementById("progressFill").style.width = `${(idx / (frames.length - 1)) * 100}%`;
+    document.getElementById("btnPrev").disabled = idx === 0;
+    document.getElementById("btnNext").disabled = idx === frames.length - 1;
+    if (idx === frames.length - 1) stopPlaying();
+  }
+
+  // ---------------------------------------------------------------
+  // 11. EVENT LISTENERS
   // ---------------------------------------------------------------
   document.getElementById("btnNext").addEventListener("click", () => { stopPlaying(); next(); });
   document.getElementById("btnPrev").addEventListener("click", () => { stopPlaying(); prev(); });
