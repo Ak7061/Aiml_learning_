@@ -1982,11 +1982,17 @@
     renderMathPanel(frame);
     renderWcssChart(idx);
 
-    document.getElementById("stepSub").textContent = `step ${idx} of ${frames.length - 1}`;
-    document.getElementById("progressFill").style.width = `${(idx / (frames.length - 1)) * 100}%`;
-    document.getElementById("btnPrev").disabled = idx === 0;
-    document.getElementById("btnNext").disabled = idx === frames.length - 1;
-    if (idx === frames.length - 1) stopPlaying();
+    updateNavigation(idx);
+  }
+
+  function updateNavigation(idx) {
+    const lastIdx = Math.max(0, frames.length - 1);
+    const progress = lastIdx ? (idx / lastIdx) * 100 : 100;
+    document.getElementById("stepSub").textContent = `step ${idx} of ${lastIdx}`;
+    document.getElementById("progressFill").style.width = `${progress}%`;
+    document.getElementById("btnPrev").disabled = idx <= 0;
+    document.getElementById("btnNext").disabled = idx >= lastIdx;
+    if (idx >= lastIdx) stopPlaying();
   }
 
   function goTo(idx, animate) {
@@ -2661,8 +2667,8 @@
     const mainSvg = document.getElementById("mainSvg");
     mainSvg.innerHTML = "";
 
-    if (frame.results && frame.results.length > 0) {
-      const results = frame.results;
+    const results = Array.isArray(frame.results) ? frame.results : [];
+    if (results.length > 0) {
       const W = 800, H = 600, PAD = 80;
 
       const maxWCSS = Math.max(1, Math.max(...results.map(r => r.wcss)) * 1.05);
@@ -2776,11 +2782,7 @@
     }
 
     renderMathPanel(frame);
-    document.getElementById("stepSub").textContent = `step ${idx} of ${frames.length - 1}`;
-    document.getElementById("progressFill").style.width = `${(idx / (frames.length - 1)) * 100}%`;
-    document.getElementById("btnPrev").disabled = idx === 0;
-    document.getElementById("btnNext").disabled = idx === frames.length - 1;
-    if (idx === frames.length - 1) stopPlaying();
+    updateNavigation(idx);
   }
 
   function renderSilhouetteFrame(frame, idx) {
@@ -2794,8 +2796,8 @@
     const mainSvg = document.getElementById("mainSvg");
     mainSvg.innerHTML = "";
 
-    if (frame.results && frame.results.length > 0) {
-      const results = frame.results;
+    const results = Array.isArray(frame.results) ? frame.results : [];
+    if (results.length > 0) {
       const W = 800, H = 600, PAD = 80;
 
       const maxScore = 1;
@@ -2926,11 +2928,7 @@
     }
 
     renderMathPanel(frame);
-    document.getElementById("stepSub").textContent = `step ${idx} of ${frames.length - 1}`;
-    document.getElementById("progressFill").style.width = `${(idx / (frames.length - 1)) * 100}%`;
-    document.getElementById("btnPrev").disabled = idx === 0;
-    document.getElementById("btnNext").disabled = idx === frames.length - 1;
-    if (idx === frames.length - 1) stopPlaying();
+    updateNavigation(idx);
   }
 
   // ---------------------------------------------------------------
