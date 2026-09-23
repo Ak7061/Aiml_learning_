@@ -482,6 +482,7 @@
     background: #FFFFFF;
     flex: 1;
     min-height: 0;
+    touch-action: manipulation;
   }
   .legend {
     display: flex;
@@ -801,6 +802,710 @@
     }
   }
 </style>
+<style>
+
+  .analysis-math .small-note { margin-top: 6px; font-size: 12px; color: #64748B; line-height: 1.45; }
+
+</style>
+
+<style>
+  .analysis-current-k {
+    border: 1px solid #CBD5E1;
+    border-left: 4px solid #6366F1;
+    border-radius: 10px;
+    padding: 11px 12px;
+    margin: 8px 0 10px;
+    background: #F8FAFC;
+  }
+
+  .analysis-k-title {
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: .03em;
+    color: #3730A3;
+  }
+
+  .analysis-k-subtitle {
+    margin-top: 5px;
+    font-size: 12px;
+    line-height: 1.45;
+    color: #475569;
+  }
+
+  .cluster-centroid-line {
+    margin: -4px 0 9px;
+    font-size: 12px;
+    color: #475569;
+    font-weight: 600;
+  }
+
+  .final-wcss-card {
+    border: 2px solid #6366F1;
+    border-radius: 10px;
+    padding: 13px;
+    margin: 10px 0 14px;
+    background: #F8FAFC;
+  }
+
+  .final-wcss-title {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: .04em;
+    color: #3730A3;
+    margin-bottom: 9px;
+  }
+
+  .final-wcss-equation {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+  }
+
+  .final-wcss-total {
+    margin-top: 8px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 17px;
+    font-weight: 800;
+    color: #111827;
+  }
+</style>
+
+
+<style>
+  .silhouette-header-card,
+  .silhouette-selector-card,
+  .silhouette-step-card,
+  .silhouette-cluster-card {
+    border: 1px solid #CBD5E1;
+    border-radius: 10px;
+    background: #FFFFFF;
+    padding: 11px 12px;
+    margin: 9px 0;
+  }
+
+  .silhouette-header-card {
+    border-left: 4px solid #7C3AED;
+    background: #FAF5FF;
+  }
+
+  .silhouette-header-title {
+    font-size: 13px;
+    font-weight: 800;
+    color: #6D28D9;
+    letter-spacing: .03em;
+  }
+
+  .silhouette-header-sub,
+  .sil-explain,
+  .sil-why,
+  .sil-row,
+  .sil-interpretation {
+    font-size: 12px;
+    line-height: 1.5;
+    color: #475569;
+  }
+
+  .silhouette-selector-card {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    background: #F8FAFC;
+  }
+
+  .silhouette-point-select {
+    width: 100%;
+    padding: 8px 9px;
+    border: 1px solid #CBD5E1;
+    border-radius: 7px;
+    background: white;
+    font-size: 13px;
+  }
+
+  .silhouette-show-all {
+    border: 1px solid #7C3AED;
+    border-radius: 7px;
+    background: white;
+    color: #6D28D9;
+    padding: 7px 9px;
+    cursor: pointer;
+    font-weight: 700;
+  }
+
+  .sil-step-title {
+    font-size: 12px;
+    font-weight: 800;
+    color: #334155;
+    letter-spacing: .02em;
+    margin-bottom: 8px;
+  }
+
+  .sil-point-big {
+    font-family: "IBM Plex Mono", monospace;
+    font-weight: 800;
+    font-size: 15px;
+    color: #111827;
+    margin-bottom: 7px;
+  }
+
+  .sil-why {
+    margin-top: 9px;
+    padding: 8px;
+    border-radius: 7px;
+    background: #F1F5F9;
+  }
+
+  .sil-calc-line {
+    border-top: 1px dashed #CBD5E1;
+    padding: 8px 0;
+  }
+
+  .sil-calc-name {
+    font-weight: 800;
+    font-size: 12px;
+    color: #111827;
+  }
+
+  .sil-calc-formula {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    line-height: 1.55;
+    color: #334155;
+    overflow-wrap: anywhere;
+  }
+
+  .sil-average-box {
+    margin-top: 8px;
+    padding: 9px;
+    border-radius: 8px;
+    background: #F8FAFC;
+    border: 1px solid #CBD5E1;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+  }
+
+  .sil-cluster-title {
+    font-size: 12px;
+    font-weight: 800;
+    color: #6D28D9;
+    margin-bottom: 7px;
+  }
+
+  .sil-final-card {
+    border: 2px solid #7C3AED;
+    background: #FAF5FF;
+  }
+
+  .sil-equation {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 13px;
+    line-height: 1.8;
+    overflow-wrap: anywhere;
+  }
+
+  .sil-equation strong {
+    font-size: 18px;
+    color: #6D28D9;
+  }
+
+  .silhouette-all-table {
+    max-height: 360px;
+    overflow: auto;
+  }
+
+  .selected-sil-row td {
+    font-weight: 800;
+    background: #F3E8FF !important;
+  }
+
+  .formula-box.compact {
+    margin: 7px 0;
+  }
+
+  .sil-empty {
+    font-size: 12px;
+    color: #64748B;
+    padding: 7px 0;
+  }
+</style>
+
+
+<style>
+  .pp-edu-header {
+    border: 1px solid #CBD5E1;
+    border-left: 4px solid #F59E0B;
+    border-radius: 10px;
+    padding: 11px 12px;
+    margin: 10px 0;
+    background: #FFFBEB;
+  }
+
+  .pp-edu-title {
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: .04em;
+    color: #92400E;
+  }
+
+  .pp-edu-subtitle,
+  .pp-small-note,
+  .pp-explain,
+  .pp-why,
+  .pp-table-hint {
+    margin-top: 5px;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #475569;
+  }
+
+  .pp-formula-card,
+  .pp-selected-card,
+  .pp-step-card,
+  .pp-distance-card,
+  .pp-min-card {
+    border: 1px solid #CBD5E1;
+    border-radius: 10px;
+    padding: 11px 12px;
+    margin: 9px 0;
+    background: #FFFFFF;
+  }
+
+  .pp-card-label {
+    font-size: 11px;
+    font-weight: 800;
+    color: #64748B;
+    letter-spacing: .04em;
+    margin-bottom: 6px;
+  }
+
+  .pp-formula,
+  .pp-calculation,
+  .pp-denominator {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 13px;
+    line-height: 1.65;
+    overflow-wrap: anywhere;
+  }
+
+  .pp-formula {
+    font-size: 16px;
+    font-weight: 700;
+    color: #111827;
+  }
+
+  .pp-step-title {
+    font-size: 13px;
+    font-weight: 800;
+    color: #1E293B;
+    margin-bottom: 6px;
+  }
+
+  .pp-selected-point {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 15px;
+  }
+
+  .pp-centroid-list {
+    display: grid;
+    gap: 6px;
+    margin-top: 8px;
+  }
+
+  .pp-centroid-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 7px 8px;
+    border-radius: 7px;
+    background: #F8FAFC;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 12px;
+  }
+
+  .pp-centroid-name {
+    font-weight: 800;
+    min-width: 28px;
+  }
+
+  .pp-distance-card.pp-nearest {
+    border: 2px solid #DC2626;
+    background: #FEF2F2;
+  }
+
+  .pp-distance-title {
+    font-weight: 800;
+    font-size: 12px;
+    margin-bottom: 7px;
+  }
+
+  .pp-nearest-badge {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 2px 5px;
+    border-radius: 999px;
+    background: #FEE2E2;
+    color: #B91C1C;
+    font-size: 9px;
+    letter-spacing: .03em;
+  }
+
+  .pp-coordinates {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #475569;
+    margin-bottom: 6px;
+  }
+
+  .pp-result {
+    margin-top: 8px;
+    padding: 8px;
+    border-radius: 7px;
+    background: #F1F5F9;
+    font-size: 12px;
+    line-height: 1.45;
+  }
+
+  .pp-probability-card {
+    border: 2px solid #6366F1;
+  }
+
+  .pp-probability-bar {
+    height: 9px;
+    background: #E2E8F0;
+    border-radius: 999px;
+    overflow: hidden;
+    margin-top: 10px;
+  }
+
+  .pp-probability-fill {
+    height: 100%;
+    background: #6366F1;
+    border-radius: 999px;
+    transition: width .2s ease;
+  }
+
+  .pp-random-value {
+    margin: 8px 0;
+    padding: 8px;
+    background: #F8FAFC;
+    border-radius: 7px;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+  }
+
+  .pp-intervals {
+    margin-top: 9px;
+    padding: 8px;
+    background: #F8FAFC;
+    border-radius: 7px;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 11px;
+    line-height: 1.55;
+  }
+
+  .pp-interval-selected {
+    font-weight: 800;
+    background: #FEF3C7;
+    border-radius: 4px;
+    padding: 2px 4px;
+  }
+
+  .pp-complete-card {
+    border: 2px solid #10B981;
+    background: #F0FDF4;
+  }
+
+  .pp-summary-line {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 6px 0;
+    border-bottom: 1px dashed #CBD5E1;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 12px;
+  }
+
+  .pp-summary-final {
+    border-bottom: 0;
+    font-size: 15px;
+  }
+
+  .pp-selected-row {
+    background: #FEF3C7 !important;
+    outline: 2px solid #F59E0B;
+    outline-offset: -2px;
+  }
+
+  .calc tbody tr[data-pp-point-index]:hover {
+    background: #F8FAFC;
+  }
+</style>
+
+
+<style>
+  .elbow-k-selector,
+  .elbow-run-card,
+  .elbow-assignments-card,
+  .elbow-centroid-card,
+  .elbow-point-controls,
+  .elbow-reduction-card {
+    border: 1px solid #CBD5E1;
+    border-radius: 10px;
+    padding: 11px 12px;
+    margin: 9px 0;
+    background: #FFFFFF;
+  }
+
+  .elbow-section-title {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .04em;
+    color: #64748B;
+    margin-bottom: 8px;
+  }
+
+  .elbow-k-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(82px, 1fr));
+    gap: 6px;
+  }
+
+  .elbow-k-card {
+    border: 1px solid #CBD5E1;
+    background: #F8FAFC;
+    border-radius: 8px;
+    padding: 8px 6px;
+    cursor: pointer;
+    text-align: center;
+  }
+
+  .elbow-k-card strong,
+  .elbow-k-card span {
+    display: block;
+  }
+
+  .elbow-k-card strong {
+    font-size: 12px;
+    color: #334155;
+  }
+
+  .elbow-k-card span {
+    margin-top: 3px;
+    font-size: 10px;
+    color: #64748B;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+  }
+
+  .elbow-k-card.active {
+    border: 2px solid #6366F1;
+    background: #EEF2FF;
+  }
+
+  .elbow-k-card.active strong {
+    color: #3730A3;
+  }
+
+  .elbow-run-list {
+    display: grid;
+    gap: 5px;
+  }
+
+  .elbow-run-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 8px;
+    border-radius: 7px;
+    background: #F8FAFC;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 11px;
+  }
+
+  .elbow-run-row strong {
+    margin-left: auto;
+  }
+
+  .elbow-run-row.selected {
+    border: 1px solid #10B981;
+    background: #ECFDF5;
+  }
+
+  .selected-run-badge {
+    font-family: "IBM Plex Sans", sans-serif;
+    font-size: 9px;
+    font-weight: 800;
+    color: #047857;
+  }
+
+  .assignment-row {
+    display: flex;
+    gap: 12px;
+    padding: 7px 8px;
+    border-bottom: 1px dashed #E2E8F0;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 12px;
+  }
+
+  .assignment-name {
+    min-width: 32px;
+    font-weight: 800;
+  }
+
+  .centroid-calculation-block {
+    padding: 9px;
+    margin: 7px 0;
+    border-radius: 8px;
+    background: #F8FAFC;
+  }
+
+  .centroid-heading {
+    font-weight: 800;
+    margin-bottom: 7px;
+  }
+
+  .elbow-math-line,
+  .elbow-math-chain {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 12px;
+    line-height: 1.65;
+    overflow-wrap: anywhere;
+  }
+
+  .centroid-final {
+    margin-top: 7px;
+    padding-top: 7px;
+    border-top: 1px dashed #CBD5E1;
+    font-weight: 700;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+  }
+
+  .elbow-control-buttons {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .elbow-expand-btn {
+    border: 1px solid #6366F1;
+    background: #EEF2FF;
+    color: #3730A3;
+    border-radius: 7px;
+    padding: 7px 9px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  .elbow-expand-btn.secondary {
+    border-color: #CBD5E1;
+    background: #F8FAFC;
+    color: #475569;
+  }
+
+  .elbow-cluster-block {
+    border: 1px solid #CBD5E1;
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 9px 0;
+    background: #FFFFFF;
+  }
+
+  .elbow-cluster-header {
+    border-left: 4px solid;
+    padding: 9px 10px;
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    align-items: center;
+    background: #F8FAFC;
+    font-size: 11px;
+  }
+
+  .elbow-cluster-header > div {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .elbow-point-item {
+    border-top: 1px solid #E2E8F0;
+  }
+
+  .elbow-point-toggle {
+    width: 100%;
+    border: 0;
+    background: #FFFFFF;
+    padding: 8px 10px;
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    text-align: left;
+    cursor: pointer;
+    font-size: 12px;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+  }
+
+  .elbow-point-toggle:hover {
+    background: #F8FAFC;
+  }
+
+  .elbow-point-toggle small {
+    margin-left: 8px;
+    color: #64748B;
+  }
+
+  .elbow-point-detail {
+    padding: 10px 12px;
+    background: #F9FAFB;
+    border-top: 1px dashed #CBD5E1;
+    font-size: 12px;
+    line-height: 1.55;
+  }
+
+  .elbow-math-chain {
+    margin-top: 8px;
+    padding: 8px;
+    background: #FFFFFF;
+    border-radius: 7px;
+  }
+
+  .elbow-cluster-total {
+    padding: 10px;
+    background: #F8FAFC;
+    border-top: 1px solid #E2E8F0;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+  }
+
+  .elbow-reduction-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 11px;
+  }
+
+  .elbow-reduction-table th,
+  .elbow-reduction-table td {
+    padding: 7px 5px;
+    border-bottom: 1px solid #E2E8F0;
+    text-align: left;
+  }
+
+  .elbow-reduction-table tr.active {
+    background: #EEF2FF;
+    font-weight: 700;
+  }
+
+  .elbow-point-list {
+    max-height: 520px;
+    overflow-y: auto;
+  }
+</style>
+
 </head>
 <body>
 
@@ -1023,13 +1728,6 @@
     return safeK;
   }
 
-  function getAnalysisMaxK() {
-    // Analysis methods evaluate a range ending at the user's selected K.
-    // K = N is not useful for model selection because every point can be its
-    // own cluster, so keep the upper bound at N - 1.
-    return Math.max(1, Math.min(getCurrentK(), POINTS.length - 1));
-  }
-
   function shuffledPoints() {
     const out = [...POINTS];
     for (let i = out.length - 1; i > 0; i--) {
@@ -1047,56 +1745,122 @@
 
   function buildPPSelectionFrames(k) {
     const ppFrames = [];
-    const chosenPoints = [];
     const chosenIdx = [];
+    const chosenPoints = [];
 
-    const idx0 = Math.floor(Math.random() * POINTS.length);
-    chosenPoints.push([POINTS[idx0].x, POINTS[idx0].y]);
-    chosenIdx.push(idx0);
+    // Step 1: choose one data point uniformly at random.
+    const first = Math.floor(Math.random() * POINTS.length);
+    chosenIdx.push(first);
+    chosenPoints.push([POINTS[first].x, POINTS[first].y]);
+
     ppFrames.push({
-      type: "pp-select", ppStep: 1, totalSteps: k,
-      chosenIndices: [], distSq: null, probs: null,
-      chosenIndex: idx0,
-      centroids: padCentroids(chosenPoints, k),
-      visibleCount: 1, assignments: null, wcss: null,
+      type: "pp-select",
+      ppStep: 1,
+      totalSteps: k,
+      chosenIndices: [],
+      distSq: null,
+      probs: null,
+      chosenIndex: first,
+      centroids: chosenPoints.map(c => c.slice()),
+      visibleCount: 1,
+      assignments: null,
+      wcss: null
     });
 
+    // Steps 2..K: sample from D(x)^2.
     for (let step = 2; step <= k; step++) {
-      const distSq = POINTS.map(p =>
-        Math.min(...chosenPoints.map(c => (p.x - c[0]) ** 2 + (p.y - c[1]) ** 2))
-      );
-      const sum = distSq.reduce((a, b) => a + b, 0);
-      const available = POINTS.map((_, i) => i).filter(i => !chosenIdx.includes(i));
-      const probs = sum > 0
-        ? distSq.map(d => d / sum)
-        : POINTS.map((_, i) => available.includes(i) ? 1 / available.length : 0);
-      const r = Math.random();
-      let cum = 0, pick = probs.length - 1;
-      for (let i = 0; i < probs.length; i++) {
-        cum += probs[i];
-        if (r <= cum) { pick = i; break; }
-      }
-      ppFrames.push({
-        type: "pp-select", ppStep: step, totalSteps: k,
-        chosenIndices: chosenIdx.slice(), distSq, probs,
-        chosenIndex: pick,
-        centroids: padCentroids(chosenPoints.concat([[POINTS[pick].x, POINTS[pick].y]]), k),
-        visibleCount: step, assignments: null, wcss: null,
+      const distSq = POINTS.map((p, i) => {
+        if (chosenIdx.includes(i)) return 0;
+
+        let nearest = Infinity;
+        for (const c of chosenPoints) {
+          const d2 = (p.x - c[0]) ** 2 + (p.y - c[1]) ** 2;
+          if (d2 < nearest) nearest = d2;
+        }
+        return nearest;
       });
-      chosenPoints.push([POINTS[pick].x, POINTS[pick].y]);
+
+      const available = POINTS
+        .map((_, i) => i)
+        .filter(i => !chosenIdx.includes(i));
+
+      const total = available.reduce((sum, i) => sum + distSq[i], 0);
+
+      // Probability is only assigned to still-available points.
+      const probs = POINTS.map(() => 0);
+
+      if (total > 0) {
+        available.forEach(i => {
+          probs[i] = distSq[i] / total;
+        });
+      } else {
+        // Degenerate case: all remaining points are equally likely.
+        const uniform = 1 / available.length;
+        available.forEach(i => {
+          probs[i] = uniform;
+        });
+      }
+
+      // Weighted random selection, restricted to available points.
+      const r = Math.random();
+      let cumulative = 0;
+      let pick = available[available.length - 1];
+
+      const cumulativeIntervals = [];
+      for (const i of available) {
+        const start = cumulative;
+        cumulative += probs[i];
+        cumulativeIntervals.push({
+          index: i,
+          start,
+          end: cumulative
+        });
+
+        if (r <= cumulative && pick === available[available.length - 1]) {
+          pick = i;
+        }
+      }
+
+      const previousChosen = chosenIdx.slice();
+
       chosenIdx.push(pick);
+      chosenPoints.push([POINTS[pick].x, POINTS[pick].y]);
+
+      ppFrames.push({
+        type: "pp-select",
+        ppStep: step,
+        totalSteps: k,
+        chosenIndices: previousChosen,
+        distSq,
+        probs,
+        chosenIndex: pick,
+        randomValue: r,
+        totalDistSq: total,
+        cumulativeIntervals,
+        centroids: chosenPoints.map(c => c.slice()),
+        visibleCount: step,
+        assignments: null,
+        wcss: null
+      });
     }
 
+    // Final initialization frame.
     ppFrames.push({
-      type: "ppready", iteration: 0,
+      type: "ppready",
+      iteration: 0,
       centroids: chosenPoints.map(c => c.slice()),
-      assignments: null, wcss: null, visibleCount: k,
+      assignments: null,
+      wcss: null,
+      visibleCount: k
     });
 
-    return { frames: ppFrames, centroids: chosenPoints };
+    return {
+      frames: ppFrames,
+      centroids: chosenPoints.map(c => c.slice())
+    };
   }
 
-  function buildFrames(method) {
+    function buildFrames(method) {
     const mode = document.getElementById("modeSelect").value;
 
     // Special handling for Elbow and Silhouette modes
@@ -1410,6 +2174,17 @@
     tooltip.classList.remove('visible');
   }
 
+  function showCentroidTooltip(k, event, centroid) {
+    if (!centroid) return;
+
+    tooltipName.textContent = `C${k + 1}`;
+    tooltipX.textContent = Number(centroid[0]).toFixed(2);
+    tooltipY.textContent = Number(centroid[1]).toFixed(2);
+
+    updateTooltipPosition(event);
+    tooltip.classList.add('visible');
+  }
+
   function updateTooltipPosition(event) {
     const tooltipWidth = 120;
     const tooltipHeight = 70;
@@ -1434,6 +2209,121 @@
   // ---------------------------------------------------------------
   let pointEls = [];
   let pointLabelEls = [];
+
+  // ---------------------------------------------------------------
+  // GRAPH CLICK → ADD A NEW DATA POINT
+  // ---------------------------------------------------------------
+
+  function getSvgPointFromMouseEvent(event) {
+    // IMPORTANT:
+    // Do not calculate SVG coordinates using rect.width/rect.height.
+    // preserveAspectRatio="xMidYMid meet" can add letterboxing, so that
+    // simple calculation makes the point appear away from the cursor.
+    const ctm = mainSvg.getScreenCTM();
+
+    if (!ctm) return null;
+
+    const inverse = ctm.inverse();
+
+    return new DOMPoint(event.clientX, event.clientY)
+      .matrixTransform(inverse);
+  }
+
+  function graphPositionToDataPoint(event) {
+    const svgPoint = getSvgPointFromMouseEvent(event);
+
+    if (!svgPoint) return null;
+
+    // svgPoint is now in the exact 800 x 600 viewBox coordinate system.
+    const x = xMin +
+      ((svgPoint.x - PAD) / (W - 2 * PAD)) *
+      (xMax - xMin);
+
+    const y = yMin +
+      ((H - PAD - svgPoint.y) / (H - 2 * PAD)) *
+      (yMax - yMin);
+
+    return {
+      x: Number(x.toFixed(2)),
+      y: Number(y.toFixed(2))
+    };
+  }
+
+  function isInsidePlotArea(event) {
+    const svgPoint = getSvgPointFromMouseEvent(event);
+
+    if (!svgPoint) return false;
+
+    return (
+      svgPoint.x >= PAD &&
+      svgPoint.x <= W - PAD &&
+      svgPoint.y >= PAD &&
+      svgPoint.y <= H - PAD
+    );
+  }
+
+  function isNearExistingPoint(x, y) {
+    const px = sx(x);
+    const py = sy(y);
+
+    return POINTS.some(p => {
+      const dx = sx(p.x) - px;
+      const dy = sy(p.y) - py;
+
+      return Math.hypot(dx, dy) < 18;
+    });
+  }
+
+  // Draw the newly-created point immediately.
+  // This makes clicking feel instant instead of waiting for K-Means
+  // calculations and the complete SVG rebuild.
+  function renderPointsImmediately() {
+    ensureClusterSvgLayers();
+    createPoints();
+
+    const currentK = getCurrentK();
+    document.getElementById("datasetInfo").textContent =
+      `${POINTS.length} points · K = ${currentK}`;
+  }
+
+  // Register this listener ONCE.
+  mainSvg.addEventListener("click", (event) => {
+    if (modeSelect.value !== "kmeans") return;
+    if (playing) return;
+
+    if (!isInsidePlotArea(event)) return;
+
+    const point = graphPositionToDataPoint(event);
+
+    if (!point) return;
+
+    const { x, y } = point;
+
+    // Do not create a duplicate if the user clicks an existing point.
+    if (isNearExistingPoint(x, y)) return;
+
+    const newIndex = POINTS.length + 1;
+
+    POINTS.push({
+      name: `P${newIndex}`,
+      x,
+      y
+    });
+
+    // Show the point immediately.
+    renderPointsImmediately();
+    renderDataEditor();
+
+    // Do the expensive K-Means rebuild AFTER the browser gets a chance
+    // to paint the new point. This removes the "click -> freeze -> point"
+    // feeling.
+    setTimeout(() => {
+      if (!playing) {
+        rebuildVisualization();
+        renderDataEditor();
+      }
+    }, 0);
+  });
 
   function createPoints() {
     pointEls = [];
@@ -1492,6 +2382,11 @@
         hideTooltip();
       });
 
+      // Clicking an existing point should not create another point.
+      hitArea.addEventListener("click", (e) => {
+        e.stopPropagation();
+      });
+
       pointEls.push(c);
       pointLabelEls.push(label);
     });
@@ -1522,16 +2417,55 @@
 
   let centroidEls = [0, 1, 2].map(k => {
     const g = el("g", { class: "centroid" });
+
+    const hit = el("circle", {
+      cx: 0,
+      cy: 0,
+      r: 24,
+      fill: "transparent",
+      style: "cursor: pointer;"
+    });
+
     const star = el("path", {
       d: starPath(0, 0, 15),
       fill: CLUSTER_COLORS_SOLID_LIGHT[k],
       stroke: "#111827",
       "stroke-width": 2.5,
-      style: "filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2))"
+      style: "filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); pointer-events: none;"
     });
+
+    g.appendChild(hit);
     g.appendChild(star);
     centroidLayer.appendChild(g);
-    return { g, star };
+
+    hit.addEventListener("mouseenter", (e) => {
+      const frame = frames[currentIdx];
+      const centroid = frame && frame.centroids ? frame.centroids[k] : null;
+      showCentroidTooltip(k, e, centroid);
+      star.setAttribute("stroke-width", "4");
+    });
+
+    hit.addEventListener("mousemove", (e) => {
+      updateTooltipPosition(e);
+    });
+
+    hit.addEventListener("mouseleave", () => {
+      hideTooltip();
+      star.setAttribute("stroke-width", "2.5");
+    });
+
+    hit.addEventListener("click", (e) => {
+      e.stopPropagation();
+
+      const frame = frames[currentIdx];
+      const centroid = frame && frame.centroids ? frame.centroids[k] : null;
+
+      if (centroid) {
+        showCentroidTooltip(k, e, centroid);
+      }
+    });
+
+    return { g, star, hit };
   });
 
   // Legend
@@ -1688,6 +2622,1066 @@
 
   function fmt(n) { return n.toFixed(2); }
 
+
+  // ---------------------------------------------------------------
+  // ANALYSIS MATH HELPERS
+  // ---------------------------------------------------------------
+
+  // Display-only cluster ordering for the analysis panels.
+  // IMPORTANT: this does NOT modify K-Means assignments or centroids.
+  // It only gives the user stable labels from left -> right (x, then y).
+  function getAnalysisDisplayClusterMap(centroids) {
+    const order = centroids
+      .map((c, originalIndex) => ({
+        originalIndex,
+        x: c[0],
+        y: c[1]
+      }))
+      .sort((a, b) => {
+        if (Math.abs(a.x - b.x) > 1e-9) return a.x - b.x;
+        return a.y - b.y;
+      });
+
+    const displayNumberByOriginalIndex = {};
+    order.forEach((item, displayIndex) => {
+      displayNumberByOriginalIndex[item.originalIndex] = displayIndex + 1;
+    });
+
+    return {
+      order,
+      displayNumberByOriginalIndex
+    };
+  }
+
+  function assertAnalysisWCSS(frame, calculatedTotal) {
+    if (!frame || typeof frame.wcss !== "number") return;
+    if (Math.abs(frame.wcss - calculatedTotal) > 0.01) {
+      console.error(
+        "WCSS display mismatch:",
+        { frameWCSS: frame.wcss, calculatedTotal }
+      );
+    }
+  }
+
+  function renderElbowMath(frame) {
+    const results = frame && frame.results ? frame.results : [];
+    if (!results.length) {
+      return `
+        <div class="analysis-current-k">
+          <div class="analysis-k-title">ELBOW METHOD — EDUCATIONAL CALCULATION</div>
+          <div class="analysis-k-subtitle">
+            Evaluate K values to build the complete WCSS calculation.
+          </div>
+        </div>
+        <div class="formula-box">
+          <div class="label">WCSS formula</div>
+          <div class="formula">
+            WCSS = Σ ‖xᵢ − μ<sub>cluster(i)</sub>‖²
+          </div>
+          <div class="small-note">
+            Select a K value after it has been evaluated to inspect its
+            complete cluster → centroid → distance → WCSS calculation.
+          </div>
+        </div>
+      `;
+    }
+
+    // On the final frame show the last/elected K; on a K frame show current K.
+    const requestedK =
+      Number.isFinite(frame.currentK) ? frame.currentK :
+      (Number.isFinite(frame.elbowK) ? frame.elbowK : results[results.length - 1].k);
+
+    const selectedResult =
+      results.find(r => r.k === requestedK) || results[results.length - 1];
+
+    const k = selectedResult.k;
+    const breakdowns = selectedResult.clusterBreakdowns || [];
+
+    let html = `
+      <div class="elbow-k-selector">
+        <div class="elbow-section-title">SELECT K TO INSPECT</div>
+        <div class="elbow-k-buttons">
+          ${results.map(r => `
+            <button
+              type="button"
+              class="elbow-k-card ${r.k === k ? "active" : ""}"
+              data-elbow-k="${r.k}"
+            >
+              <strong>K = ${r.k}</strong>
+              <span>WCSS = ${r.wcss.toFixed(2)}</span>
+            </button>
+          `).join("")}
+        </div>
+      </div>
+
+      <div class="analysis-current-k">
+        <div class="analysis-k-title">ELBOW CALCULATION — K = ${k}</div>
+        <div class="analysis-k-subtitle">
+          Every value below comes from the same K-Means run whose
+          WCSS = ${selectedResult.wcss.toFixed(2)} is plotted for K = ${k}.
+        </div>
+      </div>
+
+      <div class="formula-box">
+        <div class="label">WCSS FORMULA</div>
+        <div class="formula">
+          WCSS = Σ ‖xᵢ − μ<sub>cluster(i)</sub>‖²
+        </div>
+        <div class="small-note">
+          For each point: calculate the squared distance to its assigned
+          centroid. Add the point contributions inside each cluster, then
+          add all cluster WCSS values.
+        </div>
+      </div>
+
+      <div class="elbow-run-card">
+        <div class="elbow-section-title">K-MEANS RUN SELECTION</div>
+        <div class="elbow-run-list">
+          ${(selectedResult.runSummaries || []).map(run => `
+            <div class="elbow-run-row ${run.selected ? "selected" : ""}">
+              <span>Run ${run.run}</span>
+              <strong>WCSS = ${run.wcss.toFixed(2)}</strong>
+              ${run.selected ? '<span class="selected-run-badge">SELECTED — LOWEST WCSS</span>' : ""}
+            </div>
+          `).join("")}
+        </div>
+        <div class="small-note">
+          The detailed calculation below corresponds to the selected run only.
+          The graph uses exactly this selected run's WCSS.
+        </div>
+      </div>
+
+      <div class="elbow-assignments-card">
+        <div class="elbow-section-title">CLUSTER ASSIGNMENTS — K = ${k}</div>
+        ${breakdowns.map((b, displayIndex) => `
+          <div class="assignment-row">
+            <span class="assignment-name" style="color:${CLUSTER_COLORS_SOLID_LIGHT[b.clusterIndex] || "#111827"}">
+              C${displayIndex + 1}
+            </span>
+            <span>
+              ${b.pointIndices.length
+                ? b.pointIndices.map(i => POINTS[i].name).join(", ")
+                : "No points assigned"}
+            </span>
+          </div>
+        `).join("")}
+      </div>
+
+      <div class="elbow-centroid-card">
+        <div class="elbow-section-title">CENTROID CALCULATIONS</div>
+        ${breakdowns.map((b, displayIndex) => {
+          const c = b.centroidCalculation;
+          return `
+            <div class="centroid-calculation-block">
+              <div class="centroid-heading" style="color:${CLUSTER_COLORS_SOLID_LIGHT[b.clusterIndex] || "#111827"}">
+                C${displayIndex + 1} — μ${displayIndex + 1}
+              </div>
+
+              <div class="elbow-math-line">
+                μx = (${c.xValues.map(v => v.toFixed(2)).join(" + ")}) / ${c.count}
+              </div>
+              <div class="elbow-math-line">
+                = ${c.sumX.toFixed(2)} / ${c.count}
+                = <strong>${c.meanX.toFixed(2)}</strong>
+              </div>
+
+              <div class="elbow-math-line">
+                μy = (${c.yValues.map(v => v.toFixed(2)).join(" + ")}) / ${c.count}
+              </div>
+              <div class="elbow-math-line">
+                = ${c.sumY.toFixed(2)} / ${c.count}
+                = <strong>${c.meanY.toFixed(2)}</strong>
+              </div>
+
+              <div class="centroid-final">
+                Therefore C${displayIndex + 1} =
+                (${b.centroid[0].toFixed(2)}, ${b.centroid[1].toFixed(2)})
+              </div>
+            </div>
+          `;
+        }).join("")}
+      </div>
+
+      <div class="elbow-point-controls">
+        <div class="elbow-section-title">POINT CALCULATIONS</div>
+        <div class="elbow-control-buttons">
+          <button type="button" class="elbow-expand-btn" data-elbow-action="expand">
+            Show All Calculations
+          </button>
+          <button type="button" class="elbow-expand-btn secondary" data-elbow-action="collapse">
+            Collapse All
+          </button>
+        </div>
+      </div>
+    `;
+
+    breakdowns.forEach((b, displayIndex) => {
+      const clusterColor = CLUSTER_COLORS_SOLID_LIGHT[b.clusterIndex] || "#111827";
+
+      html += `
+        <div class="elbow-cluster-block">
+          <div class="elbow-cluster-header" style="border-left-color:${clusterColor}">
+            <div>
+              <strong>C${displayIndex + 1}</strong>
+              <span>
+                μ${displayIndex + 1} =
+                (${b.centroid[0].toFixed(2)}, ${b.centroid[1].toFixed(2)})
+              </span>
+            </div>
+            <strong>Cluster WCSS = ${b.clusterWCSS.toFixed(2)}</strong>
+          </div>
+
+          <div class="elbow-point-list">
+            ${b.points.map(item => `
+              <div class="elbow-point-item">
+                <button
+                  type="button"
+                  class="elbow-point-toggle"
+                  data-elbow-point-toggle="${item.pointIndex}"
+                >
+                  <span>
+                    ${item.point.name}
+                    <small>
+                      Distance² = ${item.squaredDistance.toFixed(2)}
+                    </small>
+                  </span>
+                  <span>Show calculation ▾</span>
+                </button>
+
+                <div
+                  class="elbow-point-detail"
+                  data-elbow-point-detail="${item.pointIndex}"
+                  style="display:none;"
+                >
+                  <div><strong>${item.point.name}</strong> = (${item.point.x.toFixed(2)}, ${item.point.y.toFixed(2)})</div>
+                  <div>Assigned cluster = <strong>C${displayIndex + 1}</strong></div>
+                  <div>Centroid = <strong>(${b.centroid[0].toFixed(2)}, ${b.centroid[1].toFixed(2)})</strong></div>
+
+                  <div class="elbow-math-chain">
+                    d²(${item.point.name}, C${displayIndex + 1})
+                    <br>
+                    = (${item.point.x.toFixed(2)} − ${b.centroid[0].toFixed(2)})²
+                      + (${item.point.y.toFixed(2)} − ${b.centroid[1].toFixed(2)})²
+                    <br>
+                    = (${item.dx.toFixed(2)})² + (${item.dy.toFixed(2)})²
+                    <br>
+                    = ${item.dxSquared.toFixed(2)} + ${item.dySquared.toFixed(2)}
+                    <br>
+                    = <strong>${item.squaredDistance.toFixed(2)}</strong>
+                  </div>
+                </div>
+              </div>
+            `).join("")}
+          </div>
+
+          <div class="elbow-cluster-total">
+            WCSS(C${displayIndex + 1})
+            =
+            ${b.points.map(p => p.squaredDistance.toFixed(2)).join(" + ") || "0.00"}
+            =
+            <strong>${b.clusterWCSS.toFixed(2)}</strong>
+          </div>
+        </div>
+      `;
+    });
+
+    const clusterTerms = breakdowns.map(b => b.clusterWCSS);
+
+    html += `
+      <div class="final-wcss-card">
+        <div class="final-wcss-title">TOTAL WCSS — K = ${k}</div>
+
+        <div class="final-wcss-equation">
+          ${clusterTerms.length
+            ? clusterTerms.map((v, i) => `WCSS(C${i + 1}) = ${v.toFixed(2)}`).join(" + ")
+            : "0.00"}
+        </div>
+
+        <div class="final-wcss-total">
+          WCSS(K = ${k}) = ${selectedResult.wcss.toFixed(2)}
+        </div>
+
+        <div class="small-note">
+          This exact value is the value plotted at <strong>K = ${k}</strong>
+          on the Elbow graph.
+        </div>
+      </div>
+    `;
+
+    // WCSS reduction comparison.
+    const ordered = results.slice().sort((a, b) => a.k - b.k);
+    const currentPosition = ordered.findIndex(r => r.k === k);
+
+    html += `
+      <div class="elbow-reduction-card">
+        <div class="elbow-section-title">WCSS REDUCTION</div>
+        <table class="elbow-reduction-table">
+          <thead>
+            <tr><th>K</th><th>WCSS</th><th>Reduction</th></tr>
+          </thead>
+          <tbody>
+            ${ordered.map((r, i) => {
+              if (i === 0) {
+                return `
+                  <tr class="${r.k === k ? "active" : ""}">
+                    <td>${r.k}</td>
+                    <td>${r.wcss.toFixed(2)}</td>
+                    <td>—</td>
+                  </tr>`;
+              }
+
+              const previous = ordered[i - 1];
+              const reduction = previous.wcss - r.wcss;
+
+              return `
+                <tr class="${r.k === k ? "active" : ""}">
+                  <td>${r.k}</td>
+                  <td>${r.wcss.toFixed(2)}</td>
+                  <td>
+                    ${previous.wcss.toFixed(2)} − ${r.wcss.toFixed(2)}
+                    = <strong>${reduction.toFixed(2)}</strong>
+                  </td>
+                </tr>`;
+            }).join("")}
+          </tbody>
+        </table>
+
+        <div class="small-note">
+          As K increases, points generally have more nearby centroids available,
+          so within-cluster squared distances generally decrease. The Elbow
+          Method looks for where the reduction begins to become smaller.
+        </div>
+      </div>
+    `;
+
+    return html;
+  }
+
+  function renderSilhouetteMath(frame) {
+    if (!frame || !frame.assignments || !frame.centroids) return "";
+
+    const k = frame.currentK;
+    const assignments = frame.assignments;
+
+    // Keep the selected point valid if the dataset changes.
+    silhouetteSelectedPoint = Math.max(
+      0,
+      Math.min(POINTS.length - 1, silhouetteSelectedPoint)
+    );
+
+    const d = getSilhouetteDetails(assignments, k, silhouetteSelectedPoint);
+    const allDetails = calculateAllSilhouetteDetails(assignments, k);
+
+    const ownNames = d.ownPoints.length
+      ? d.ownPoints.map(x => x.q.name).join(", ")
+      : "No other points";
+
+    let html = `
+      <div class="silhouette-header-card">
+        <div class="silhouette-header-title">SILHOUETTE CALCULATION — K = ${k}</div>
+        <div class="silhouette-header-sub">
+          Select a point below. Every number is calculated from the actual
+          K-Means assignments for this K.
+        </div>
+      </div>
+
+      <div class="silhouette-selector-card">
+        <label for="silhouettePointSelect"><strong>Selected Point</strong></label>
+        <select id="silhouettePointSelect" class="silhouette-point-select"
+          onchange="setSilhouetteSelectedPoint(Number(this.value))">
+          ${POINTS.map((p, i) =>
+            `<option value="${i}" ${i === silhouetteSelectedPoint ? "selected" : ""}>
+              ${p.name} = (${p.x.toFixed(2)}, ${p.y.toFixed(2)})
+            </option>`
+          ).join("")}
+        </select>
+        <button class="silhouette-show-all"
+          onclick="toggleSilhouetteCompleteCalculation()">
+          ${silhouetteShowAll ? "Hide Complete Calculation" : "Show Complete Calculation"}
+        </button>
+      </div>
+
+      <div class="formula-box">
+        <div class="label">Silhouette formulas</div>
+        <div class="formula">
+          a(i) = average distance to ALL OTHER points in the SAME cluster
+          <br>
+          b(i) = MINIMUM average distance to every OTHER cluster
+          <br>
+          s(i) = (b(i) − a(i)) / max(a(i), b(i))
+        </div>
+        <div class="small-note">
+          a(i) = intra-cluster distance · b(i) = nearest-cluster distance ·
+          s(i) = silhouette coefficient
+        </div>
+      </div>
+
+      <div class="silhouette-step-card">
+        <div class="sil-step-title">STEP 1 — Identify the point</div>
+        <div class="sil-point-big">${d.point.name} = (${d.point.x.toFixed(2)}, ${d.point.y.toFixed(2)})</div>
+        <div class="sil-row"><strong>Own cluster:</strong> C${d.displayCluster}</div>
+        <div class="sil-row"><strong>Own-cluster points:</strong> {${ownNames}}</div>
+        <div class="sil-why">
+          <strong>WHY?</strong> We measure how tightly this point belongs to its own cluster.
+          We do <strong>NOT</strong> calculate the distance from the point to itself.
+        </div>
+      </div>
+
+      <div class="silhouette-step-card">
+        <div class="sil-step-title">STEP 2 — Calculate a(i)</div>
+        <div class="sil-explain">
+          a(i) is <strong>NOT</strong> the distance to the centroid.
+          It is the average Euclidean distance from ${d.point.name}
+          to every OTHER point inside C${d.displayCluster}.
+        </div>
+        <div class="formula-box compact">
+          <div class="formula">d(Pᵢ,Pⱼ) = √[(xᵢ−xⱼ)² + (yᵢ−yⱼ)²]</div>
+        </div>
+        ${d.ownDistances.length
+          ? d.ownDistances.map(target => renderDistanceCalculation(d, {
+              name: target.name,
+              point: target.point
+            })).join("")
+          : `<div class="sil-empty">There are no other points in this cluster, so a(i) = 0.</div>`
+        }
+        ${d.ownDistances.length ? `
+          <div class="sil-average-box">
+            <strong>a(${d.point.name})</strong>
+            =
+            (${d.ownDistances.map(x => x.distance.toFixed(3)).join(" + ")})
+            / ${d.ownDistances.length}
+            <br>
+            = ${(d.ownDistances.reduce((s,x) => s+x.distance,0)).toFixed(3)}
+            / ${d.ownDistances.length}
+            <br>
+            = <strong>${d.a.toFixed(3)}</strong>
+          </div>
+        ` : ""}
+      </div>
+    `;
+
+    // b(i): one complete section for EVERY other cluster.
+    html += `
+      <div class="silhouette-step-card">
+        <div class="sil-step-title">STEP 3 — Calculate b(i)</div>
+        <div class="sil-explain">
+          For <strong>every other cluster</strong>, calculate the average
+          point-to-point distance from ${d.point.name} to all points in that cluster.
+          We then take the <strong>minimum</strong> of those averages.
+        </div>
+      </div>
+    `;
+
+    d.otherClusters.forEach(cluster => {
+      const sum = cluster.distances.reduce((s,x) => s+x.distance, 0);
+
+      html += `
+        <div class="silhouette-cluster-card">
+          <div class="sil-cluster-title">
+            OTHER CLUSTER C${cluster.displayCluster}
+          </div>
+          <div class="sil-row">
+            <strong>C${cluster.displayCluster} points:</strong>
+            {${cluster.distances.map(x => x.name).join(", ")}}
+          </div>
+          ${cluster.distances.map(target => renderDistanceCalculation(d, {
+            name: target.name,
+            point: target.point
+          })).join("")}
+          <div class="sil-average-box">
+            Average distance to C${cluster.displayCluster}
+            =
+            (${cluster.distances.map(x => x.distance.toFixed(3)).join(" + ")})
+            / ${cluster.distances.length}
+            <br>
+            = ${sum.toFixed(3)} / ${cluster.distances.length}
+            <br>
+            = <strong>${cluster.average.toFixed(3)}</strong>
+          </div>
+        </div>
+      `;
+    });
+
+    html += `
+      <div class="silhouette-step-card">
+        <div class="sil-step-title">STEP 4 — Determine b(i)</div>
+        <div class="sil-compare-table">
+          ${d.otherClusters.length
+            ? d.otherClusters.map(c => `
+              <div class="sil-compare-row">
+                <span>C${c.displayCluster}</span>
+                <strong>${c.average.toFixed(3)}</strong>
+              </div>
+            `).join("")
+            : `<div class="sil-empty">No other cluster exists.</div>`
+          }
+        </div>
+        ${d.otherClusters.length ? `
+          <div class="sil-average-box">
+            b(${d.point.name}) =
+            min(${d.otherClusters.map(c => c.average.toFixed(3)).join(", ")})
+            = <strong>${d.nearest.toFixed(3)}</strong>
+            ${d.nearestCluster ? ` → nearest is C${d.nearestCluster.displayCluster}` : ""}
+          </div>
+        ` : ""}
+        <div class="sil-why">
+          <strong>IMPORTANT:</strong> b(i) is NOT the distance to the nearest centroid.
+          It is the minimum of the average point-to-point distances to the other clusters.
+        </div>
+      </div>
+
+      <div class="silhouette-step-card sil-final-card">
+        <div class="sil-step-title">STEP 5 — Calculate silhouette s(i)</div>
+        <div class="sil-equation">
+          s(${d.point.name}) =
+          (${d.nearest.toFixed(3)} − ${d.a.toFixed(3)})
+          /
+          max(${d.a.toFixed(3)}, ${d.nearest.toFixed(3)})
+          <br>
+          =
+          ${(d.nearest - d.a).toFixed(3)}
+          /
+          ${Math.max(d.a, d.nearest).toFixed(3)}
+          <br>
+          =
+          <strong>${d.silhouette.toFixed(3)}</strong>
+        </div>
+        <div class="sil-interpretation">
+          <strong>Interpretation</strong><br>
+          a(i) = ${d.a.toFixed(3)} → average distance to own cluster<br>
+          b(i) = ${d.nearest.toFixed(3)} → average distance to nearest other cluster<br>
+          Difference = ${(d.nearest - d.a).toFixed(3)}<br><br>
+          ${d.nearest > d.a
+            ? `${d.point.name} is closer to its own cluster than to its nearest alternative cluster.`
+            : `${d.point.name} is not closer to its own cluster than to its nearest alternative cluster.`}
+        </div>
+      </div>
+    `;
+
+    if (silhouetteShowAll) {
+      html += `
+        <div class="silhouette-step-card">
+          <div class="sil-step-title">STEP 6 — Silhouette score for every point</div>
+          <div class="calc-table-wrap silhouette-all-table">
+            <table class="calc">
+              <thead>
+                <tr>
+                  <th>Point</th>
+                  <th>Cluster</th>
+                  <th>a(i)</th>
+                  <th>b(i)</th>
+                  <th>s(i)</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${allDetails.map((x, i) => `
+                  <tr${i === silhouetteSelectedPoint ? ' class="selected-sil-row"' : ""}>
+                    <td>${x.point.name}</td>
+                    <td>C${x.displayCluster}</td>
+                    <td>${x.a.toFixed(3)}</td>
+                    <td>${x.nearest.toFixed(3)}</td>
+                    <td><strong>${x.silhouette.toFixed(3)}</strong></td>
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          </div>
+          <div class="sil-average-box">
+            S(K = ${k}) =
+            (${allDetails.map(x => x.silhouette.toFixed(3)).join(" + ")})
+            / ${allDetails.length}
+            <br>
+            = <strong>${allDetails.reduce((s,x) => s+x.silhouette,0).toFixed(3)}
+              / ${allDetails.length}
+              = ${(allDetails.reduce((s,x) => s+x.silhouette,0) / Math.max(1,allDetails.length)).toFixed(3)}
+            </strong>
+          </div>
+        </div>
+      `;
+    }
+
+    return html;
+  }
+
+  function setSilhouetteSelectedPoint(index) {
+    if (!Number.isInteger(index) || index < 0 || index >= POINTS.length) return;
+    silhouetteSelectedPoint = index;
+    renderFrame(currentIdx, { animate: false });
+  }
+
+  function toggleSilhouetteCompleteCalculation() {
+    silhouetteShowAll = !silhouetteShowAll;
+    renderFrame(currentIdx, { animate: false });
+  }
+
+
+  // ---------------------------------------------------------------
+  // K-MEANS++ EDUCATIONAL CALCULATION
+  // ---------------------------------------------------------------
+
+  function ppSelectedCentroids(frame) {
+    if (!frame || frame.type !== "pp-select") return [];
+
+    return (frame.chosenIndices || []).map((index, k) => ({
+      k: k + 1,
+      index,
+      point: POINTS[index],
+      centroid: [
+        POINTS[index].x,
+        POINTS[index].y
+      ]
+    }));
+  }
+
+  function ppDistanceSquared(point, centroid) {
+    const dx = point.x - centroid[0];
+    const dy = point.y - centroid[1];
+
+    return {
+      dx,
+      dy,
+      dx2: dx * dx,
+      dy2: dy * dy,
+      d2: dx * dx + dy * dy
+    };
+  }
+
+  function renderKMeansPPEducationalCalculation(frame, selectedIndex) {
+    if (!frame || frame.type !== "pp-select") return "";
+
+    const safeIndex =
+      Number.isInteger(selectedIndex) &&
+      selectedIndex >= 0 &&
+      selectedIndex < POINTS.length
+        ? selectedIndex
+        : frame.chosenIndex;
+
+    const point = POINTS[safeIndex];
+    const selected = ppSelectedCentroids(frame);
+    const isFirstStep = frame.ppStep === 1;
+
+    let html = `
+      <div class="pp-edu-header">
+        <div class="pp-edu-title">EDUCATIONAL CALCULATION</div>
+        <div class="pp-edu-subtitle">
+          Click any point in the table to see exactly how its
+          K-Means++ value is calculated.
+        </div>
+      </div>
+
+      <div class="pp-formula-card">
+        <div class="pp-card-label">K-MEANS++ PROBABILITY FORMULA</div>
+        <div class="pp-formula">
+          P(xᵢ) =
+          <span class="frac">
+            <span>D(xᵢ)²</span>
+            <span>Σ D(xⱼ)²</span>
+          </span>
+        </div>
+        <div class="pp-small-note">
+          D(xᵢ) is the distance from xᵢ to its nearest
+          already-selected centroid.
+        </div>
+      </div>
+
+      <div class="pp-selected-card">
+        <div class="pp-card-label">SELECTED POINT</div>
+        <div class="pp-selected-point">
+          <strong>${point.name}</strong>
+          = (${point.x.toFixed(2)}, ${point.y.toFixed(2)})
+        </div>
+      </div>
+    `;
+
+    // FIRST CENTROID SPECIAL CASE
+    if (isFirstStep) {
+      const n = POINTS.length;
+      const uniform = n ? 1 / n : 0;
+
+      html += `
+        <div class="pp-step-card">
+          <div class="pp-step-title">STEP 1 — Choose the first centroid</div>
+          <div class="pp-explain">
+            The first centroid is selected uniformly at random from the
+            dataset. No distance calculation is performed yet.
+          </div>
+
+          <div class="pp-calculation">
+            P(xᵢ) = 1 / n
+            <br>
+            = 1 / ${n}
+            <br>
+            = <strong>${(uniform * 100).toFixed(2)}%</strong>
+          </div>
+
+          <div class="pp-result">
+            ${point.name === POINTS[frame.chosenIndex].name
+              ? `Selected first centroid: <strong>C1 = ${point.name}</strong>`
+              : `${point.name} was not selected as C1 in this run.`
+            }
+          </div>
+
+          <div class="pp-why">
+            <strong>Important:</strong> D(x)² and weighted K-Means++
+            probabilities do not exist for the first centroid selection.
+          </div>
+        </div>
+      `;
+
+      return html;
+    }
+
+    // EXISTING CENTROIDS
+    html += `
+      <div class="pp-step-card">
+        <div class="pp-step-title">STEP 1 — Already selected centroids</div>
+        <div class="pp-explain">
+          For this selection round, these are the centroids that already
+          exist. They come directly from the current K-Means++ state.
+        </div>
+
+        <div class="pp-centroid-list">
+          ${selected.map(c => `
+            <div class="pp-centroid-row" data-centroid-index="${c.index}">
+              <span class="pp-centroid-name">C${c.k}</span>
+              <span>${c.point.name} = (${c.point.x.toFixed(2)}, ${c.point.y.toFixed(2)})</span>
+            </div>
+          `).join("")}
+        </div>
+      </div>
+    `;
+
+    // DISTANCE TO EVERY SELECTED CENTROID
+    const distanceRows = selected.map(c => {
+      const d = ppDistanceSquared(point, c.centroid);
+
+      return {
+        ...c,
+        ...d
+      };
+    });
+
+    const nearest = distanceRows.length
+      ? distanceRows.reduce((best, current) =>
+          current.d2 < best.d2 ? current : best
+        )
+      : null;
+
+    html += `
+      <div class="pp-step-card">
+        <div class="pp-step-title">STEP 2 — Calculate D(x)² to every selected centroid</div>
+        <div class="pp-explain">
+          K-Means++ calculates the squared distance from the selected point
+          to <strong>every</strong> already-selected centroid.
+        </div>
+    `;
+
+    distanceRows.forEach(d => {
+      const nearestClass = nearest && d.k === nearest.k ? " pp-nearest" : "";
+
+      html += `
+        <div class="pp-distance-card${nearestClass}">
+          <div class="pp-distance-title">
+            Distance² from ${point.name} to C${d.k}
+            ${nearest && d.k === nearest.k ? '<span class="pp-nearest-badge">NEAREST</span>' : ""}
+          </div>
+
+          <div class="pp-coordinates">
+            ${point.name} = (${point.x.toFixed(2)}, ${point.y.toFixed(2)})<br>
+            C${d.k} = (${d.centroid[0].toFixed(2)}, ${d.centroid[1].toFixed(2)})
+          </div>
+
+          <div class="pp-calculation">
+            D(${point.name}, C${d.k})²
+            <br>
+            = (${point.x.toFixed(2)} − ${d.centroid[0].toFixed(2)})²
+              + (${point.y.toFixed(2)} − ${d.centroid[1].toFixed(2)})²
+            <br>
+            = (${d.dx.toFixed(2)})² + (${d.dy.toFixed(2)})²
+            <br>
+            = ${d.dx2.toFixed(2)} + ${d.dy2.toFixed(2)}
+            <br>
+            = <strong>${d.d2.toFixed(2)}</strong>
+          </div>
+        </div>
+      `;
+    });
+
+    if (nearest) {
+      html += `
+        <div class="pp-min-card">
+          <div class="pp-step-title">STEP 3 — Take the minimum distance²</div>
+
+          <div class="pp-calculation">
+            D(${point.name})² =
+            min(${distanceRows.map(d => d.d2.toFixed(2)).join(", ")})
+            <br>
+            = <strong>${nearest.d2.toFixed(2)}</strong>
+          </div>
+
+          <div class="pp-result">
+            ${nearest.d2.toFixed(2)} is used because
+            <strong>C${nearest.k}</strong> is the nearest already-selected
+            centroid to ${point.name}.
+          </div>
+
+          <div class="pp-why">
+            <strong>Important:</strong> K-Means++ uses the nearest
+            already-selected centroid — not simply the most recently selected centroid.
+          </div>
+        </div>
+      `;
+    }
+
+    // TOTAL D² AND PROBABILITY
+    const d2 = frame.distSq ? frame.distSq[safeIndex] : (nearest ? nearest.d2 : 0);
+    const total = typeof frame.totalDistSq === "number"
+      ? frame.totalDistSq
+      : (frame.probs
+        ? POINTS.reduce((sum, _, i) => sum + ((frame.probs[i] || 0) > 0
+            ? frame.distSq[i]
+            : 0), 0)
+        : 0);
+
+    const probability = frame.probs ? (frame.probs[safeIndex] || 0) : 0;
+
+    html += `
+      <div class="pp-step-card">
+        <div class="pp-step-title">STEP 4 — Calculate ΣD(x)²</div>
+
+        <div class="pp-explain">
+          The denominator is the sum of D(x)² for all points that are
+          eligible to be selected.
+        </div>
+
+        <div class="pp-denominator">
+          ${POINTS.map((p, i) => `
+            <span>${p.name}: ${(frame.distSq ? frame.distSq[i] : 0).toFixed(2)}</span>
+          `).join(" + ")}
+          <br>
+          = <strong>${total.toFixed(2)}</strong>
+        </div>
+      </div>
+
+      <div class="pp-step-card pp-probability-card">
+        <div class="pp-step-title">STEP 5 — Calculate probability</div>
+
+        <div class="pp-calculation">
+          P(${point.name}) =
+          D(${point.name})² / ΣD(x)²
+          <br>
+          = ${d2.toFixed(2)} / ${total.toFixed(2)}
+          <br>
+          = ${probability.toFixed(4)}
+          <br>
+          = <strong>${(probability * 100).toFixed(2)}%</strong>
+        </div>
+
+        <div class="pp-probability-bar">
+          <div class="pp-probability-fill" style="width:${Math.min(100, probability * 100)}%"></div>
+        </div>
+
+        <div class="pp-why">
+          <strong>Why?</strong>
+          Points farther from existing centroids have larger D(x)²,
+          so they receive a larger probability of becoming the next centroid.
+        </div>
+      </div>
+    `;
+
+    // RANDOM SAMPLING RESULT — ONLY IF THE ACTUAL IMPLEMENTATION STORED r.
+    if (typeof frame.randomValue === "number" && Array.isArray(frame.cumulativeIntervals)) {
+      const interval = frame.cumulativeIntervals.find(x => x.index === safeIndex);
+
+      html += `
+        <div class="pp-step-card">
+          <div class="pp-step-title">STEP 6 — Weighted random sampling</div>
+
+          <div class="pp-explain">
+            The next centroid is sampled from the probability distribution.
+            It is <strong>not</strong> necessarily the point with the highest probability.
+          </div>
+
+          <div class="pp-random-value">
+            Random sample r = <strong>${frame.randomValue.toFixed(4)}</strong>
+          </div>
+
+          ${interval ? `
+            <div class="pp-calculation">
+              ${point.name}'s cumulative interval:
+              <br>
+              ${interval.start.toFixed(4)}
+              &lt; r ≤
+              ${interval.end.toFixed(4)}
+              <br><br>
+              ${interval.start.toFixed(4)}
+              &lt;
+              <strong>${frame.randomValue.toFixed(4)}</strong>
+              ≤
+              ${interval.end.toFixed(4)}
+            </div>
+            <div class="pp-result">
+              ${point.name === POINTS[frame.chosenIndex].name
+                ? `<strong>${point.name} was sampled as the next centroid.</strong>`
+                : `${point.name} was not sampled in this run.`
+              }
+            </div>
+          ` : `
+            <div class="pp-note">
+              ${point.name} is not in the available sampling interval because
+              it was already selected as a centroid.
+            </div>
+          `}
+
+          <div class="pp-intervals">
+            ${frame.cumulativeIntervals.map((x, n) => `
+              <div class="${x.index === safeIndex ? "pp-interval-selected" : ""}">
+                ${POINTS[x.index].name}:
+                ${x.start.toFixed(4)} → ${x.end.toFixed(4)}
+              </div>
+            `).join("")}
+          </div>
+        </div>
+      `;
+    }
+
+    // COMPLETE CALCULATION SUMMARY
+    html += `
+      <div class="pp-step-card pp-complete-card">
+        <div class="pp-step-title">COMPLETE CALCULATION — ${point.name}</div>
+
+        <div class="pp-summary-line">
+          <span>Nearest centroid</span>
+          <strong>${nearest ? `C${nearest.k}` : "—"}</strong>
+        </div>
+
+        <div class="pp-summary-line">
+          <span>D(${point.name})²</span>
+          <strong>${d2.toFixed(2)}</strong>
+        </div>
+
+        <div class="pp-summary-line">
+          <span>ΣD(x)²</span>
+          <strong>${total.toFixed(2)}</strong>
+        </div>
+
+        <div class="pp-summary-line pp-summary-final">
+          <span>P(${point.name})</span>
+          <strong>${(probability * 100).toFixed(2)}%</strong>
+        </div>
+      </div>
+    `;
+
+    return html;
+  }
+
+  function bindKMeansPPTableRows(frame) {
+    if (!frame || frame.type !== "pp-select" || frame.ppStep === 1) return;
+
+    mathPanel.querySelectorAll("[data-pp-point-index]").forEach(row => {
+      row.addEventListener("click", () => {
+        const index = Number(row.getAttribute("data-pp-point-index"));
+        if (!Number.isInteger(index)) return;
+
+        ppSelectedPoint = index;
+        renderFrame(currentIdx, { animate: false });
+      });
+    });
+  }
+
+  function renderKMeansPPDistanceOverlay(frame, selectedIndex) {
+    linkLayer.innerHTML = "";
+
+    if (!frame || frame.type !== "pp-select") return;
+
+    const safeIndex =
+      Number.isInteger(selectedIndex) &&
+      selectedIndex >= 0 &&
+      selectedIndex < POINTS.length
+        ? selectedIndex
+        : frame.chosenIndex;
+
+    const selectedPoint = POINTS[safeIndex];
+
+    // Highlight selected point.
+    POINTS.forEach((_, i) => {
+      if (!pointEls[i]) return;
+
+      if (i === safeIndex) {
+        pointEls[i].setAttribute("fill", "#DC2626");
+        pointEls[i].setAttribute("stroke", "#7F1D1D");
+        pointEls[i].setAttribute("r", 13);
+      } else if (frame.chosenIndices && frame.chosenIndices.includes(i)) {
+        pointEls[i].setAttribute("fill", "#111827");
+        pointEls[i].setAttribute("stroke", "#111827");
+        pointEls[i].setAttribute("r", 10);
+      } else {
+        pointEls[i].setAttribute("fill", "#6B7280");
+        pointEls[i].setAttribute("stroke", "#374151");
+        pointEls[i].setAttribute("r", 10);
+      }
+    });
+
+    if (frame.ppStep === 1) return;
+
+    const selected = ppSelectedCentroids(frame);
+
+    centroidEls.forEach(ce => {
+      ce.star.setAttribute("stroke", "#111827");
+      ce.star.setAttribute("stroke-width", "2.5");
+    });
+
+    selected.forEach(c => {
+      const d = ppDistanceSquared(selectedPoint, c.centroid);
+      const isNearest = selected.every(other =>
+        d.d2 <= ppDistanceSquared(selectedPoint, other.centroid).d2 + 1e-12
+      );
+
+      // Visually emphasize the actual nearest selected centroid.
+      const centroidVisual = centroidEls[c.k - 1];
+      if (centroidVisual) {
+        centroidVisual.star.setAttribute("stroke", isNearest ? "#DC2626" : "#111827");
+        centroidVisual.star.setAttribute("stroke-width", isNearest ? "4" : "2.5");
+      }
+
+      const line = el("line", {
+        x1: sx(selectedPoint.x),
+        y1: sy(selectedPoint.y),
+        x2: sx(c.centroid[0]),
+        y2: sy(c.centroid[1]),
+        stroke: isNearest ? "#DC2626" : "#64748B",
+        "stroke-width": isNearest ? 4 : 2,
+        "stroke-dasharray": isNearest ? "none" : "6,5",
+        opacity: 0.9
+      });
+
+      linkLayer.appendChild(line);
+
+      const mx = (sx(selectedPoint.x) + sx(c.centroid[0])) / 2;
+      const my = (sy(selectedPoint.y) + sy(c.centroid[1])) / 2;
+
+      const label = el("text", {
+        x: mx,
+        y: my - 8,
+        "text-anchor": "middle",
+        "font-size": 12,
+        "font-family": "IBM Plex Mono, monospace",
+        "font-weight": "700",
+        fill: isNearest ? "#DC2626" : "#475569",
+        "pointer-events": "none"
+      });
+      label.textContent = `D²=${d.d2.toFixed(2)}`;
+      linkLayer.appendChild(label);
+    });
+
+    // Keep selected centroid stars above the lines.
+    centroidEls.forEach((ce, k) => {
+      const visible = frame.chosenIndices &&
+        frame.chosenIndices.includes(k < POINTS.length ? k : -1);
+      ce.g.style.opacity = k < frame.visibleCount ? 1 : 0;
+    });
+  }
+
   function renderMathPanel(frame) {
     let html = "";
 
@@ -1697,7 +3691,7 @@
       html += `<h2 class="step-title">Elbow Method — Introduction</h2>`;
       html += `<p class="step-desc">The <strong>Elbow Method</strong> helps determine the optimal number of clusters by plotting WCSS (Within-Cluster Sum of Squares) for different values of K.</p>`;
       html += `<div class="formula-box"><div class="label">Goal</div><div class="formula">Find the "elbow" point where adding more clusters gives diminishing returns in WCSS reduction.</div></div>`;
-      html += `<div class="note">We'll test K = 1 to ${frame.totalSteps}, running K-Means for each value and recording the WCSS. Press <kbd>Next</kbd> to begin.</div>`;
+      html += `<div class="note">We'll test K = 1 to ${frame.totalSteps}. Each step calculates one K value and immediately adds its WCSS point to the graph. Press <kbd>Next</kbd> or <kbd>Play</kbd> to begin.</div>`;
     } else if (frame.type === "elbow-computing") {
       html += `<span class="badge" style="background:#FEF3C7;color:#D97706;">elbow method</span>`;
       html += `<h2 class="step-title">Testing K = ${frame.currentK}</h2>`;
@@ -1718,6 +3712,7 @@
       html += `</div>`;
       html += `<div class="formula-box"><div class="label">Progress</div><div class="formula">${frame.step} of ${frame.totalSteps} tests completed</div></div>`;
       html += `<div class="note">The graph shows all tested K values so far. Notice how WCSS generally decreases as K increases.</div>`;
+      html += renderElbowMath(frame);
     } else if (frame.type === "elbow-done") {
       html += `<span class="badge done">analysis complete</span>`;
       html += `<h2 class="step-title">Elbow Method — Recommendation</h2>`;
@@ -1727,7 +3722,17 @@
       html += `<div class="stat"><div class="k">Tests Run</div><div class="v">${frame.results.length}</div></div>`;
       html += `</div>`;
       html += `<div class="formula-box"><div class="label">Why K = ${frame.elbowK}?</div><div class="formula">This point sits farthest from the straight line between the first and last WCSS values, where the curve bends most visibly.</div></div>`;
-      html += `<div class="note">✅ <strong>K = ${frame.elbowK}</strong> offers a good balance between cluster count and data fit. Beyond this, additional clusters provide diminishing improvement.</div>`;
+      html += `<div class="note">The complete WCSS curve is now available on the graph. The selected elbow is K = ${frame.elbowK}.</div>`;
+      const elbowFinal = frame.results.find(r => r.k === frame.elbowK) || frame.results[frame.results.length - 1];
+      if (elbowFinal) {
+        html += renderElbowMath({
+          currentK: elbowFinal.k,
+          assignments: elbowFinal.assignments,
+          centroids: elbowFinal.centroids,
+          wcss: elbowFinal.wcss,
+          results: frame.results
+        });
+      }
     }
 
     // Silhouette Analysis frames
@@ -1735,8 +3740,8 @@
       html += `<span class="badge" style="background:#F3E8FF;color:#7C3AED;">silhouette analysis</span>`;
       html += `<h2 class="step-title">Silhouette Analysis — Introduction</h2>`;
       html += `<p class="step-desc">The <strong>Silhouette Score</strong> measures how well-separated and cohesive the clusters are. Scores range from -1 to +1.</p>`;
-      html += `<div class="formula-box"><div class="label">Silhouette Score</div><div class="formula">s(i) = (b - a) / max(a, b)<br><br>a = mean distance to same cluster<br>b = mean distance to nearest other cluster</div></div>`;
-      html += `<div class="note">Higher scores (closer to 1) indicate better-defined clusters. We'll test K = 2 to ${frame.totalSteps + 1}. Press <kbd>Next</kbd> to begin.</div>`;
+      html += `<div class="formula-box"><div class="label">Silhouette Method — core mathematics</div><div class="formula">a(i) = average distance to ALL OTHER points in the SAME cluster<br><br>b(i) = MINIMUM average distance to every OTHER cluster<br><br>s(i) = (b(i) − a(i)) / max(a(i), b(i))</div><div class="small-note">a(i) = intra-cluster distance · b(i) = nearest-cluster distance · s(i) = silhouette coefficient</div></div>`;
+      html += `<div class="note"><strong>Think of it this way:</strong><br>a(i) → “How close am I to my own cluster?”<br>b(i) → “How far am I from the nearest other cluster?”<br>s(i) → “How well does this point fit its cluster?”<br><br>We'll test K = 2 to ${frame.totalSteps + 1}. Press <kbd>Next</kbd> or <kbd>Play</kbd> to begin.</div>`;
     } else if (frame.type === "silhouette-computing") {
       html += `<span class="badge" style="background:#F3E8FF;color:#7C3AED;">silhouette analysis</span>`;
       html += `<h2 class="step-title">Testing K = ${frame.currentK}</h2>`;
@@ -1755,13 +3760,9 @@
       html += `<div class="stat"><div class="k">K Value</div><div class="v">${frame.currentK}</div></div>`;
       html += `<div class="stat"><div class="k">Silhouette Score</div><div class="v">${fmt(frame.silhouette)}</div></div>`;
       html += `</div>`;
-      html += `<div class="formula-box"><div class="label">Score Interpretation</div><div class="formula">`;
-      if (frame.silhouette > 0.7) html += `Excellent: Strong, well-separated clusters`;
-      else if (frame.silhouette > 0.5) html += `Good: Reasonable cluster structure`;
-      else if (frame.silhouette > 0.25) html += `Fair: Weak cluster structure`;
-      else html += `Poor: Clusters may overlap significantly`;
-      html += `</div></div>`;
+      html += `<div class="formula-box"><div class="label">Current K calculation</div><div class="formula">The score below is calculated from the silhouette coefficient of EVERY point, not from centroid distances.</div></div>`;
       html += `<div class="note">Progress: ${frame.step} of ${frame.totalSteps} tests completed. The graph shows all tested K values.</div>`;
+      html += renderSilhouetteMath(frame);
     } else if (frame.type === "silhouette-done") {
       html += `<span class="badge done">analysis complete</span>`;
       html += `<h2 class="step-title">Silhouette Analysis — Recommendation</h2>`;
@@ -1771,7 +3772,17 @@
       html += `<div class="stat"><div class="k">Best Score</div><div class="v">${fmt(frame.bestScore)}</div></div>`;
       html += `</div>`;
       html += `<div class="formula-box"><div class="label">Why K = ${frame.bestK}?</div><div class="formula">This K value has the highest average silhouette score, meaning the clusters are most well-separated and cohesive.</div></div>`;
-      html += `<div class="note">✅ <strong>K = ${frame.bestK}</strong> produces the best cluster quality (score: ${fmt(frame.bestScore)}). Points are well-assigned to their clusters with good separation.</div>`;
+      html += `<div class="note">The complete silhouette curve is now available on the graph. The highest average score occurs at K = ${frame.bestK}.</div>`;
+      const silhouetteFinal = frame.results.find(r => r.k === frame.bestK) || frame.results[frame.results.length - 1];
+      if (silhouetteFinal) {
+        html += renderSilhouetteMath({
+          currentK: silhouetteFinal.k,
+          assignments: silhouetteFinal.assignments,
+          centroids: silhouetteFinal.centroids,
+          silhouette: silhouetteFinal.silhouette,
+          results: frame.results
+        });
+      }
     }
 
     // Original K-Means frames
@@ -1788,6 +3799,7 @@
       if (frame.ppStep === 1) {
         html += `<p class="step-desc">The first centroid is picked <strong>uniformly at random</strong> from the data points — no distances are involved yet.</p>`;
         html += `<div class="formula-box"><div class="label">Picked</div><div class="formula">C1 = ${POINTS[frame.chosenIndex].name} = (${fmt(POINTS[frame.chosenIndex].x)}, ${fmt(POINTS[frame.chosenIndex].y)})</div></div>`;
+        html += renderKMeansPPEducationalCalculation(frame, ppSelectedPoint);
       } else {
         html += `<p class="step-desc">Every point gets a probability proportional to its squared distance from the <strong>nearest already-chosen</strong> centroid — points far from existing centroids are more likely to be picked next.</p>`;
         html += `<div class="formula-box"><div class="label">Sampling probability</div><div class="formula">P(x) ∝ D(x)²<br>D(x) = distance to nearest chosen centroid</div></div>`;
@@ -1795,11 +3807,37 @@
         POINTS.forEach((p, i) => {
           const already = frame.chosenIndices.includes(i);
           const isPick = i === frame.chosenIndex;
-          html += `<tr><td>${p.name}${already ? " •" : ""}</td><td>${fmt(frame.distSq[i])}</td>` +
-            `<td${isPick ? ' class="win" style="color:#DC2626"' : ""}>${(frame.probs[i] * 100).toFixed(1)}%</td></tr>`;
+          const isSelected = i === ppSelectedPoint;
+
+          html += `<tr
+            data-pp-point-index="${i}"
+            class="${isSelected ? "pp-selected-row" : ""}"
+            style="cursor:pointer"
+            title="Click to show calculation"
+          >
+            <td>${p.name}${already ? " •" : ""}</td>
+            <td>${fmt(frame.distSq[i])}</td>
+            <td${isPick ? ' class="win" style="color:#DC2626"' : ""}>${(frame.probs[i] * 100).toFixed(2)}%</td>
+          </tr>`;
         });
         html += `</tbody></table></div>`;
-        html += `<div class="note">Picked: <strong style="color:#DC2626">${POINTS[frame.chosenIndex].name}</strong>. Points already used as centroids (•) sit at D(x)=0, so they can't be re-picked.</div>`;
+
+        html += `
+          <div class="pp-table-hint">
+            Click any point row to open its complete K-Means++ calculation.
+          </div>
+        `;
+
+        html += renderKMeansPPEducationalCalculation(
+          frame,
+          ppSelectedPoint
+        );
+
+        html += `<div class="note">
+          Picked: <strong style="color:#DC2626">${POINTS[frame.chosenIndex].name}</strong>.
+          Points already used as centroids (•) have D(x)² = 0 and probability 0,
+          so they cannot be selected again.
+        </div>`;
       }
     } else if (frame.type === "ppready") {
       html += `<span class="badge" style="background:#FEF3C7;color:#D97706;">k-means++ init</span>`;
@@ -1858,14 +3896,87 @@
       html += `<div class="note">This is what the Elbow and Silhouette methods use across many values of K — here you're seeing WCSS settle for one fixed K = ${K}.</div>`;
     }
     mathPanel.innerHTML = html;
+
+    if (frame.type === "pp-select") {
+      bindKMeansPPTableRows(frame);
+    }
+
+    if (frame.type === "elbow-result" || frame.type === "elbow-done") {
+      bindElbowEducationalControls(frame);
+    }
+  }
+
+  function bindElbowEducationalControls(frame) {
+    mathPanel.querySelectorAll("[data-elbow-k]").forEach(button => {
+      button.addEventListener("click", () => {
+        const k = Number(button.getAttribute("data-elbow-k"));
+        selectElbowK(k);
+      });
+    });
+
+    mathPanel.querySelectorAll("[data-elbow-point-toggle]").forEach(button => {
+      button.addEventListener("click", () => {
+        const pointIndex = button.getAttribute("data-elbow-point-toggle");
+        const detail = mathPanel.querySelector(
+          `[data-elbow-point-detail="${pointIndex}"]`
+        );
+
+        if (!detail) return;
+
+        const open = detail.style.display !== "none";
+        detail.style.display = open ? "none" : "block";
+
+        const label = button.querySelector("span:last-child");
+        if (label) {
+          label.textContent = open
+            ? "Show calculation ▾"
+            : "Hide calculation ▴";
+        }
+      });
+    });
+
+    mathPanel.querySelectorAll("[data-elbow-action]").forEach(button => {
+      button.addEventListener("click", () => {
+        const action = button.getAttribute("data-elbow-action");
+        mathPanel.querySelectorAll(".elbow-point-detail").forEach(detail => {
+          detail.style.display = action === "expand" ? "block" : "none";
+        });
+
+        mathPanel.querySelectorAll(".elbow-point-toggle span:last-child").forEach(label => {
+          label.textContent =
+            action === "expand" ? "Hide calculation ▴" : "Show calculation ▾";
+        });
+      });
+    });
+  }
+
+  function selectElbowK(k) {
+    const index = frames.findIndex(
+      frame =>
+        frame.type === "elbow-result" &&
+        frame.currentK === k
+    );
+
+    if (index >= 0) {
+      stopPlaying();
+      goTo(index, false);
+    }
   }
 
   // ---------------------------------------------------------------
   // 8. ANIMATION
   // ---------------------------------------------------------------
   let currentIdx = 0;
+  let silhouetteSelectedPoint = 0;
+  let silhouetteShowAll = false;
+
+  // Educational K-Means++ point selection.
+  // This is UI state only; it never changes the algorithm state.
+  let ppSelectedPoint = 0;
+
   let playing = false;
   let timer = null;
+  let playGeneration = 0;
 
   function lerp(a, b, t) { return a + (b - a) * t; }
 
@@ -1956,6 +4067,13 @@
       });
     }
 
+    // K-Means++ educational distance overlay.
+    if (frame.type === "pp-select") {
+      renderKMeansPPDistanceOverlay(frame, ppSelectedPoint);
+    } else {
+      linkLayer.innerHTML = "";
+    }
+
     // Centroid visibility
     const visibleCount = frame.visibleCount !== undefined ? frame.visibleCount : K;
     centroidEls.forEach((ce, k) => {
@@ -1982,89 +4100,131 @@
     renderMathPanel(frame);
     renderWcssChart(idx);
 
-    updateNavigation(idx);
-  }
-
-  function updateNavigation(idx) {
-    const lastIdx = Math.max(0, frames.length - 1);
-    const progress = lastIdx ? (idx / lastIdx) * 100 : 100;
-    document.getElementById("stepSub").textContent = `step ${idx} of ${lastIdx}`;
-    document.getElementById("progressFill").style.width = `${progress}%`;
-    document.getElementById("btnPrev").disabled = idx <= 0;
-    document.getElementById("btnNext").disabled = idx >= lastIdx;
-    if (idx >= lastIdx) stopPlaying();
+    document.getElementById("stepSub").textContent = `step ${idx} of ${frames.length - 1}`;
+    document.getElementById("progressFill").style.width = `${(idx / (frames.length - 1)) * 100}%`;
+    document.getElementById("btnPrev").disabled = idx === 0;
+    document.getElementById("btnNext").disabled = idx === frames.length - 1;
+    if (idx === frames.length - 1) stopPlaying();
   }
 
   function goTo(idx, animate) {
-    if (!frames.length) return;
-    idx = Math.max(0, Math.min(frames.length - 1, Number(idx) || 0));
+    idx = Math.max(0, Math.min(frames.length - 1, idx));
     renderFrame(idx, { animate: animate });
   }
 
-  function next() {
-    if (currentIdx < frames.length - 1) goTo(currentIdx + 1, true);
-  }
-
-  function prev() {
-    const previousIdx = Math.max(0, currentIdx - 1);
-    if (previousIdx !== currentIdx) goTo(previousIdx, false);
-  }
+  function next() { if (currentIdx < frames.length - 1) goTo(currentIdx + 1, true); }
+  function prev() { if (currentIdx > 0) goTo(currentIdx - 1, false); }
 
   function startPlaying() {
-    if (currentIdx === frames.length - 1) goTo(0, false);
+    if (!frames || frames.length <= 1) return;
+
+    // Every new playback session gets a unique token.
+    // Any timer from an older session becomes invalid.
+    const myGeneration = ++playGeneration;
+
+    if (currentIdx >= frames.length - 1) {
+      goTo(0, false);
+    }
+
     playing = true;
     document.getElementById("btnPlay").innerHTML = "⏸ Pause";
-    const speed = parseInt(document.getElementById("speed").value, 10);
-    tick(speed);
+    scheduleNextStep(myGeneration);
   }
-  function tick(speed) {
+
+  function scheduleNextStep(generation = playGeneration) {
     clearTimeout(timer);
+
+    if (!playing || generation !== playGeneration) return;
+
+    if (currentIdx >= frames.length - 1) {
+      stopPlaying();
+      return;
+    }
+
+    const speed = parseInt(document.getElementById("speed").value, 10);
+
     timer = setTimeout(() => {
-      if (!playing) return;
-      if (currentIdx >= frames.length - 1) { stopPlaying(); return; }
+      // This callback is stale if the user changed mode, data, K,
+      // initialization, or manually stopped playback.
+      if (!playing || generation !== playGeneration) return;
+
       next();
-      tick(parseInt(document.getElementById("speed").value, 10));
+
+      if (!playing || generation !== playGeneration ||
+          currentIdx >= frames.length - 1) {
+        stopPlaying();
+        return;
+      }
+
+      scheduleNextStep(generation);
     }, speed);
   }
+
+  function tick(speed) {
+    // Kept for compatibility with any existing calls.
+    scheduleNextStep(playGeneration);
+  }
+
   function stopPlaying() {
+    // Invalidate every pending callback BEFORE clearing the timer.
+    playGeneration++;
     playing = false;
     clearTimeout(timer);
+    timer = null;
     document.getElementById("btnPlay").innerHTML = "▶ Play";
   }
 
-  const initSelect = document.getElementById("initMethod");
+    const initSelect = document.getElementById("initMethod");
   const modeSelect = document.getElementById("modeSelect");
 
   function rebuild() {
     stopPlaying();
+
     const mode = modeSelect.value;
+    updateKControlForMode();
 
-    // Show/hide appropriate UI elements based on mode
-    if (mode === "elbow" || mode === "silhouette") {
-      document.querySelector('.chart-card.main').style.display = 'flex';
-      document.querySelector('.chart-card.mini').style.display = 'none'; // Hide mini chart in analysis modes
+    const isAnalysis = mode === "elbow" || mode === "silhouette";
 
-      // Hide K-Means specific controls
+    document.querySelector(".chart-card.main").style.display = "flex";
+    document.querySelector(".chart-card.mini").style.display = isAnalysis ? "none" : "flex";
+
+    if (isAnalysis) {
       initSelect.disabled = true;
       initSelect.style.opacity = "0.5";
     } else {
-      document.querySelector('.chart-card.main').style.display = 'flex';
-      document.querySelector('.chart-card.mini').style.display = 'flex';
-      document.querySelector('.chart-card.mini h3').innerHTML = 'WCSS (inertia) after each step <span class="sub">lower = tighter clusters</span>';
-
-      // Enable K-Means specific controls
       initSelect.disabled = false;
       initSelect.style.opacity = "1";
+      document.querySelector(".chart-card.mini h3").innerHTML =
+        'WCSS (inertia) after each step <span class="sub">lower = tighter clusters</span>';
     }
 
     frames = buildFrames(initSelect.value);
+    currentIdx = 0;
     goTo(0, false);
   }
 
-  modeSelect.addEventListener("change", rebuild);
+    modeSelect.addEventListener("change", () => {
+    // Selecting a different analysis mode must NEVER inherit
+    // playback from the previous mode.
+    stopPlaying();
+
+    // Rebuild synchronously at frame 0.
+    rebuild();
+
+    // Force the control to remain in the Play state.
+    playing = false;
+    document.getElementById("btnPlay").innerHTML = "▶ Play";
+  });
+
+  // Changing K / Maximum K immediately rebuilds the analysis.
+  document.getElementById("kInput").addEventListener("change", () => {
+    stopPlaying();
+    rebuild();
+  });
 
   function rebuildVisualization() {
     stopPlaying();
+    updateKControlForMode();
 
     // Rebuild frames first, then recalculate the graph bounds from the
     // current data + centroids. This prevents K=4/K=5 centroids from
@@ -2095,16 +4255,59 @@
     for (let k = 0; k < Math.max(currentK, 6); k++) {
       const g = el("g", { class: "centroid" });
       const colorIdx = k % CLUSTER_COLORS_SOLID_LIGHT.length;
+      // Transparent hit target makes the centroid easy to click.
+      const hit = el("circle", {
+        cx: 0,
+        cy: 0,
+        r: 24,
+        fill: "transparent",
+        style: "cursor: pointer;"
+      });
+
       const star = el("path", {
         d: starPath(0, 0, 15),
         fill: CLUSTER_COLORS_SOLID_LIGHT[colorIdx],
         stroke: "#111827",
         "stroke-width": 2.5,
-        style: "filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2))"
+        style: "filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); pointer-events: none;"
       });
+
+      g.appendChild(hit);
       g.appendChild(star);
       centroidLayer.appendChild(g);
-      centroidEls.push({ g, star });
+
+      // Show C1/C2/... and its x₁/x₂ coordinates when the centroid
+      // is hovered or clicked.
+      hit.addEventListener("mouseenter", (e) => {
+        const frame = frames[currentIdx];
+        const centroid = frame && frame.centroids ? frame.centroids[k] : null;
+        showCentroidTooltip(k, e, centroid);
+        star.setAttribute("stroke-width", "4");
+      });
+
+      hit.addEventListener("mousemove", (e) => {
+        updateTooltipPosition(e);
+      });
+
+      hit.addEventListener("mouseleave", () => {
+        hideTooltip();
+        star.setAttribute("stroke-width", "2.5");
+      });
+
+      hit.addEventListener("click", (e) => {
+        // IMPORTANT: don't let a centroid click fall through to the
+        // graph background and create a new data point.
+        e.stopPropagation();
+
+        const frame = frames[currentIdx];
+        const centroid = frame && frame.centroids ? frame.centroids[k] : null;
+
+        if (centroid) {
+          showCentroidTooltip(k, e, centroid);
+        }
+      });
+
+      centroidEls.push({ g, star, hit });
     }
 
     // Update dataset info
@@ -2162,12 +4365,143 @@
   // 10. ELBOW & SILHOUETTE ANALYSIS
   // ---------------------------------------------------------------
 
+  function getAnalysisMaxK(mode) {
+    // Elbow can include K=1. Silhouette starts at K=2.
+    const maxAllowed = Math.min(Math.max(1, POINTS.length - 1), 6);
+    const input = document.getElementById("kInput");
+
+    let requested = parseInt(input.value, 10);
+    if (!Number.isFinite(requested)) {
+      requested = Math.min(6, maxAllowed);
+    }
+
+    const minK = mode === "silhouette" ? 2 : 1;
+    const safeMax = Math.max(minK, Math.min(maxAllowed, requested));
+
+    input.min = String(minK);
+    input.max = String(maxAllowed);
+    input.value = String(safeMax);
+
+    return safeMax;
+  }
+
+  function updateKControlForMode() {
+    const mode = document.getElementById("modeSelect").value;
+    const groupTitle = document.querySelector(".k-input-group h3");
+    const groupLabel = document.querySelector(".k-input-wrapper label");
+    const input = document.getElementById("kInput");
+
+    if (mode === "elbow" || mode === "silhouette") {
+      groupTitle.textContent = "Maximum K to Test";
+      groupLabel.textContent = "Max K =";
+
+      const maxAllowed = Math.min(Math.max(1, POINTS.length - 1), 6);
+      input.max = String(maxAllowed);
+      input.min = mode === "silhouette" ? "2" : "1";
+
+      let value = parseInt(input.value, 10);
+      if (!Number.isFinite(value)) value = maxAllowed;
+      value = Math.max(parseInt(input.min, 10), Math.min(maxAllowed, value));
+      input.value = String(value);
+    } else {
+      groupTitle.textContent = "Number of Clusters";
+      groupLabel.textContent = "K =";
+      input.min = "1";
+      input.max = String(Math.min(POINTS.length, 6));
+
+      let value = parseInt(input.value, 10);
+      if (!Number.isFinite(value)) value = 3;
+      value = Math.max(1, Math.min(parseInt(input.max, 10), value));
+      input.value = String(value);
+    }
+  }
+
   // Build step-by-step frames for Elbow Method
+  function buildElbowEducationalData(result, runs) {
+    const { k, centroids, assignments, wcss } = result;
+
+    const clusterBreakdowns = centroids.map((centroid, clusterIndex) => {
+      const memberIndices = POINTS
+        .map((_, i) => i)
+        .filter(i => assignments[i] === clusterIndex);
+
+      const points = memberIndices.map(pointIndex => {
+        const point = POINTS[pointIndex];
+        const dx = point.x - centroid[0];
+        const dy = point.y - centroid[1];
+        const dxSquared = dx * dx;
+        const dySquared = dy * dy;
+        const squaredDistance = dxSquared + dySquared;
+
+        return {
+          pointIndex,
+          point: { ...point },
+          dx,
+          dy,
+          dxSquared,
+          dySquared,
+          squaredDistance
+        };
+      });
+
+      const clusterWCSS = points.reduce(
+        (sum, p) => sum + p.squaredDistance,
+        0
+      );
+
+      // Store the actual mean calculation used to produce the centroid.
+      const count = memberIndices.length;
+      const xValues = memberIndices.map(i => POINTS[i].x);
+      const yValues = memberIndices.map(i => POINTS[i].y);
+      const sumX = xValues.reduce((s, x) => s + x, 0);
+      const sumY = yValues.reduce((s, y) => s + y, 0);
+
+      return {
+        clusterIndex,
+        centroid: centroid.slice(),
+        pointIndices: memberIndices.slice(),
+        points,
+        clusterWCSS,
+        centroidCalculation: {
+          count,
+          xValues,
+          yValues,
+          sumX,
+          sumY,
+          meanX: count ? sumX / count : centroid[0],
+          meanY: count ? sumY / count : centroid[1]
+        }
+      };
+    });
+
+    const selectedRunIndex =
+      Number.isInteger(result.selectedRunIndex)
+        ? result.selectedRunIndex
+        : 0;
+
+    const runSummaries = runs.map((run, index) => ({
+      run: index + 1,
+      wcss: run.wcss,
+      selected: index === selectedRunIndex
+    }));
+
+    return {
+      k,
+      wcss,
+      centroids: centroids.map(c => c.slice()),
+      assignments: assignments.slice(),
+      clusterBreakdowns,
+      runSummaries,
+      selectedRunIndex: selectedRunIndex + 1
+    };
+  }
+
+  // Build step-by-step frames for Elbow Method.
+  // The K-Means/WCSS engine itself is unchanged.
   function buildElbowFrames() {
-    const maxK = getAnalysisMaxK();
+    const maxK = getAnalysisMaxK("elbow");
     const built = [];
 
-    // Introduction frame
     built.push({
       type: "elbow-intro",
       step: 0,
@@ -2176,62 +4510,70 @@
       currentK: null
     });
 
-    // Run K-Means for each K value
     const allResults = [];
-    for (let k = 1; k <= maxK; k++) {
-      // Add "computing" frame
-      built.push({
-        type: "elbow-computing",
-        step: k,
-        totalSteps: maxK,
-        currentK: k,
-        results: [...allResults]
-      });
 
-      // Run K-Means multiple times
+    for (let k = 1; k <= maxK; k++) {
       const runs = [];
+
       for (let run = 0; run < 5; run++) {
         runs.push(runKMeansForK(k));
       }
-      const best = runs.reduce((a, b) => a.wcss < b.wcss ? a : b);
 
-      allResults.push({ k, wcss: best.wcss, centroids: best.centroids, assignments: best.assignments });
+      let bestIndex = 0;
+      for (let i = 1; i < runs.length; i++) {
+        if (runs[i].wcss < runs[bestIndex].wcss) {
+          bestIndex = i;
+        }
+      }
 
-      // Add "result" frame showing this K's result
+      const best = {
+        ...runs[bestIndex],
+        selectedRunIndex: bestIndex
+      };
+
+      const educational = buildElbowEducationalData(
+        { k, ...best },
+        runs
+      );
+
+      allResults.push(educational);
+
       built.push({
         type: "elbow-result",
         step: k,
         totalSteps: maxK,
         currentK: k,
-        results: [...allResults],
-        wcss: best.wcss,
-        centroids: best.centroids,
-        assignments: best.assignments
+        results: allResults.slice(),
+        wcss: educational.wcss,
+        centroids: educational.centroids,
+        assignments: educational.assignments,
+        clusterBreakdowns: educational.clusterBreakdowns,
+        runSummaries: educational.runSummaries,
+        selectedRunIndex: educational.selectedRunIndex
       });
     }
 
-    // Final analysis frame
-    const elbowK = findElbowPoint(allResults);
     built.push({
       type: "elbow-done",
-      results: allResults,
-      elbowK: elbowK,
+      step: maxK + 1,
+      results: allResults.slice(),
+      elbowK: findElbowPoint(allResults),
       totalSteps: maxK
     });
 
     return built;
   }
 
-  // Build step-by-step frames for Silhouette Analysis
   function buildSilhouetteFrames() {
-    const maxK = getAnalysisMaxK();
+    const maxK = getAnalysisMaxK("silhouette");
     const built = [];
+    const totalTests = Math.max(0, maxK - 1);
 
-    // Introduction frame
+    // Frame 0: introduction.
     built.push({
       type: "silhouette-intro",
       step: 0,
-      totalSteps: maxK - 1,
+      totalSteps: totalTests,
       results: [],
       currentK: null
     });
@@ -2247,25 +4589,24 @@
       return built;
     }
 
-    // Run K-Means for each K value (starting from K=2)
     const allResults = [];
-    for (let k = 2; k <= maxK; k++) {
-      // Add "computing" frame
-      built.push({
-        type: "silhouette-computing",
-        step: k - 1,
-        totalSteps: maxK - 1,
-        currentK: k,
-        results: [...allResults]
-      });
 
-      // Run K-Means multiple times
+    // ONE FRAME PER K.
+    for (let k = 2; k <= maxK; k++) {
       const runs = [];
+
       for (let run = 0; run < 5; run++) {
         runs.push(runKMeansForK(k));
       }
-      const best = runs.reduce((a, b) => a.wcss < b.wcss ? a : b);
-      const silhouette = calculateSilhouetteScore(best.assignments, k);
+
+      const best = runs.reduce(
+        (a, b) => a.wcss < b.wcss ? a : b
+      );
+
+      const silhouette = calculateSilhouetteScore(
+        best.assignments,
+        k
+      );
 
       allResults.push({
         k,
@@ -2275,27 +4616,31 @@
         assignments: best.assignments
       });
 
-      // Add "result" frame showing this K's result with silhouette calculation
       built.push({
         type: "silhouette-result",
         step: k - 1,
-        totalSteps: maxK - 1,
+        totalSteps: totalTests,
         currentK: k,
-        results: [...allResults],
+        results: allResults.slice(),
         silhouette,
         centroids: best.centroids,
         assignments: best.assignments
       });
     }
 
-    // Final analysis frame
-    const bestK = allResults.reduce((a, b) => a.silhouette > b.silhouette ? a : b);
+    const bestK = allResults.reduce(
+      (a, b) => a.silhouette > b.silhouette ? a : b,
+      allResults[0]
+    );
+
+    // Final frame: complete curve + best K.
     built.push({
       type: "silhouette-done",
-      results: allResults,
-      bestK: bestK.k,
-      bestScore: bestK.silhouette,
-      totalSteps: maxK - 1
+      step: totalTests + 1,
+      results: allResults.slice(),
+      bestK: bestK ? bestK.k : "N/A",
+      bestScore: bestK ? bestK.silhouette : 0,
+      totalSteps: totalTests
     });
 
     return built;
@@ -2408,7 +4753,7 @@
   }
 
   function analyzeOptimalK() {
-    const maxK = getAnalysisMaxK();
+    const maxK = Math.min(POINTS.length - 1, 6);
     const results = [];
 
     // Run K-Means for K = 1 to maxK
@@ -2667,20 +5012,26 @@
     const mainSvg = document.getElementById("mainSvg");
     mainSvg.innerHTML = "";
 
-    const results = Array.isArray(frame.results) ? frame.results : [];
-    if (results.length > 0) {
+    if (frame.results && frame.results.length > 0) {
+      const results = frame.results;
       const W = 800, H = 600, PAD = 80;
 
       const maxWCSS = Math.max(1, Math.max(...results.map(r => r.wcss)) * 1.05);
       const minWCSS = 0;
       const wcssRange = maxWCSS - minWCSS;
 
-      const sx = (k) => PAD + ((k - 1) / Math.max(1, frame.totalSteps - 1)) * (W - 2 * PAD);
+      const minK = Math.min(...results.map(r => r.k));
+      const maxK = Math.max(...results.map(r => r.k));
+
+      const sx = (k) =>
+        PAD +
+        ((k - minK) / Math.max(1, maxK - minK)) *
+        (W - 2 * PAD);
       const sy = (wcss) => H - PAD - ((wcss - minWCSS) / wcssRange) * (H - 2 * PAD);
 
       // Grid
       const g = el("g", {});
-      for (let k = 1; k <= frame.totalSteps; k++) {
+      for (let k = minK; k <= maxK; k++) {
         g.appendChild(el("line", {
           x1: sx(k), y1: H - PAD, x2: sx(k), y2: PAD - 20,
           stroke: "#E5E7EB", "stroke-width": 1
@@ -2752,12 +5103,28 @@
         const isElbow = frame.type === "elbow-done" && r.k === frame.elbowK;
         const isCurrent = frame.type === "elbow-result" && r.k === frame.currentK;
 
-        mainSvg.appendChild(el("circle", {
+        const pointCircle = el("circle", {
           cx: sx(r.k), cy: sy(r.wcss),
           r: isElbow ? 12 : (isCurrent ? 10 : 8),
           fill: isElbow ? "#10B981" : (isCurrent ? "#EC4899" : "#EC4899"),
-          stroke: "#FFFFFF", "stroke-width": 3
-        }));
+          stroke: "#FFFFFF", "stroke-width": 3,
+          style: "cursor:pointer"
+        });
+
+        pointCircle.addEventListener("click", (e) => {
+          e.stopPropagation();
+          selectElbowK(r.k);
+        });
+
+        pointCircle.addEventListener("mouseenter", () => {
+          pointCircle.setAttribute("r", isElbow ? 14 : 12);
+        });
+
+        pointCircle.addEventListener("mouseleave", () => {
+          pointCircle.setAttribute("r", isElbow ? 12 : (isCurrent ? 10 : 8));
+        });
+
+        mainSvg.appendChild(pointCircle);
 
         // Value label
         const t = el("text", {
@@ -2767,6 +5134,11 @@
           "font-family": "IBM Plex Mono", "font-weight": "700"
         });
         t.textContent = r.wcss.toFixed(2);
+        t.style.cursor = "pointer";
+        t.addEventListener("click", (e) => {
+          e.stopPropagation();
+          selectElbowK(r.k);
+        });
         mainSvg.appendChild(t);
 
         if (isElbow) {
@@ -2782,7 +5154,22 @@
     }
 
     renderMathPanel(frame);
-    updateNavigation(idx);
+    const last = Math.max(1, frames.length - 1);
+
+    if (frame.type === "elbow-result") {
+      document.getElementById("stepSub").textContent =
+        `K = ${frame.currentK} · step ${idx} of ${last}`;
+    } else if (frame.type === "silhouette-result") {
+      document.getElementById("stepSub").textContent =
+        `K = ${frame.currentK} · step ${idx} of ${last}`;
+    } else {
+      document.getElementById("stepSub").textContent =
+        `step ${idx} of ${last}`;
+    }
+    document.getElementById("progressFill").style.width = `${(idx / last) * 100}%`;
+    document.getElementById("btnPrev").disabled = idx === 0;
+    document.getElementById("btnNext").disabled = idx === frames.length - 1;
+    if (idx === frames.length - 1) stopPlaying();
   }
 
   function renderSilhouetteFrame(frame, idx) {
@@ -2796,15 +5183,21 @@
     const mainSvg = document.getElementById("mainSvg");
     mainSvg.innerHTML = "";
 
-    const results = Array.isArray(frame.results) ? frame.results : [];
-    if (results.length > 0) {
+    if (frame.results && frame.results.length > 0) {
+      const results = frame.results;
       const W = 800, H = 600, PAD = 80;
 
       const maxScore = 1;
       const minScore = -1;
       const scoreRange = maxScore - minScore;
 
-      const sx = (k) => PAD + ((k - 2) / Math.max(1, frame.totalSteps - 1)) * (W - 2 * PAD);
+      const minK = Math.min(...results.map(r => r.k));
+      const maxK = Math.max(...results.map(r => r.k));
+
+      const sx = (k) =>
+        PAD +
+        ((k - minK) / Math.max(1, maxK - minK)) *
+        (W - 2 * PAD);
       const sy = (score) => H - PAD - ((score - minScore) / scoreRange) * (H - 2 * PAD);
 
       // Score interpretation zones sit behind the plotted line and points.
@@ -2826,7 +5219,7 @@
 
       // Grid
       const g = el("g", {});
-      for (let k = 2; k <= frame.totalSteps + 1; k++) {
+      for (let k = minK; k <= maxK; k++) {
         g.appendChild(el("line", {
           x1: sx(k), y1: H - PAD, x2: sx(k), y2: PAD - 20,
           stroke: "#E5E7EB", "stroke-width": 1
@@ -2928,7 +5321,22 @@
     }
 
     renderMathPanel(frame);
-    updateNavigation(idx);
+    const last = Math.max(1, frames.length - 1);
+
+    if (frame.type === "elbow-result") {
+      document.getElementById("stepSub").textContent =
+        `K = ${frame.currentK} · step ${idx} of ${last}`;
+    } else if (frame.type === "silhouette-result") {
+      document.getElementById("stepSub").textContent =
+        `K = ${frame.currentK} · step ${idx} of ${last}`;
+    } else {
+      document.getElementById("stepSub").textContent =
+        `step ${idx} of ${last}`;
+    }
+    document.getElementById("progressFill").style.width = `${(idx / last) * 100}%`;
+    document.getElementById("btnPrev").disabled = idx === 0;
+    document.getElementById("btnNext").disabled = idx === frames.length - 1;
+    if (idx === frames.length - 1) stopPlaying();
   }
 
   // ---------------------------------------------------------------
@@ -2936,8 +5344,15 @@
   // ---------------------------------------------------------------
   document.getElementById("btnNext").addEventListener("click", () => { stopPlaying(); next(); });
   document.getElementById("btnPrev").addEventListener("click", () => { stopPlaying(); prev(); });
-  document.getElementById("btnReset").addEventListener("click", rebuild);
-  initSelect.addEventListener("change", rebuild);
+  document.getElementById("btnReset").addEventListener("click", () => {
+    stopPlaying();
+    rebuild();
+  });
+
+  initSelect.addEventListener("change", () => {
+    stopPlaying();
+    rebuild();
+  });
   document.getElementById("btnPlay").addEventListener("click", () => {
     if (playing) stopPlaying(); else startPlaying();
   });
@@ -2980,6 +5395,7 @@
   });
 
   // Initial paint
+  updateKControlForMode();
   renderDataEditor();
   goTo(0, false);
 })();
